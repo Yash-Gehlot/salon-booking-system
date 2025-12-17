@@ -1,4 +1,6 @@
-import { Sequelize, DataTypes } from "sequelize";
+import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
+dotenv.config();
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,
@@ -7,6 +9,7 @@ const sequelize = new Sequelize(
   {
     host: "localhost",
     dialect: "mysql",
+    logging: false,
   }
 );
 

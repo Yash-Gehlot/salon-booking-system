@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Salon Booking System</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container">
+        <div class="logo">
+          <h2>✂️ Glamour Salon - Admin</h2>
+        </div>
+        <ul class="nav-links">
+          <li><a href="/admin">Dashboard</a></li>
+          <li><a href="#" onclick="showSection('services')">Services</a></li>
+          <li><a href="#" onclick="showSection('staff')">Staff</a></li>
+          <li>
+            <a href="#" onclick="showSection('appointments')">Appointments</a>
+          </li>
+          <li><a href="#" onclick="showSection('users')">Users</a></li>
+          <li><a href="#" id="logoutBtn">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="page-header">
+      <div class="container">
+        <h1>Admin Dashboard</h1>
+        <p>Manage your salon's operations</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Statistics Section -->
+      <div id="statsSection">
+        <div class="admin-stats">
+          <div class="stat-card">
+            <h3 id="totalUsers">0</h3>
+            <p>Total Customers</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="totalStaff">0</h3>
+            <p>Staff Members</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="totalServices">0</h3>
+            <p>Services</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="totalAppointments">0</h3>
+            <p>Total Appointments</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="pendingAppointments">0</h3>
+            <p>Pending</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="totalRevenue">$0</h3>
+            <p>Total Revenue</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Services Section -->
+      <div id="servicesSection" style="display: none">
+        <div class="dashboard-card">
+          <h3>Manage Services</h3>
+          <button class="btn btn-primary" onclick="showAddServiceForm()">
+            Add New Service
+          </button>
+
+          <div id="addServiceForm" style="display: none; margin-top: 2rem">
+            <form id="serviceForm">
+              <div class="form-group">
+                <label>Service Name</label>
+                <input type="text" id="serviceName" required />
+              </div>
+              <div class="form-group">
+                <label>Description</label>
+                <textarea id="serviceDescription"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Duration (minutes)</label>
+                <input type="number" id="serviceDuration" required />
+              </div>
+              <div class="form-group">
+                <label>Price ($)</label>
+                <input type="number" step="0.01" id="servicePrice" required />
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Create Service
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="hideAddServiceForm()"
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+
+          <div id="servicesList" class="data-table" style="margin-top: 2rem">
+            <div class="loading">Loading services...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Staff Section -->
+      <div id="staffSection" style="display: none">
+        <div class="dashboard-card">
+          <h3>Manage Staff</h3>
+          <button class="btn btn-primary" onclick="showAddStaffForm()">
+            Add New Staff Member
+          </button>
+
+          <div id="addStaffForm" style="display: none; margin-top: 2rem">
+            <form id="staffForm">
+              <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="staffName" required />
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="staffEmail" required />
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="staffPassword" required />
+              </div>
+              <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" id="staffPhone" />
+              </div>
+              <div class="form-group">
+                <label>Specialization</label>
+                <input type="text" id="staffSpecialization" />
+              </div>
+              <button type="submit" class="btn btn-primary">Add Staff</button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="hideAddStaffForm()"
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+
+          <div id="staffList" class="data-table" style="margin-top: 2rem">
+            <div class="loading">Loading staff...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointments Section -->
+      <div id="appointmentsSection" style="display: none">
+        <div class="dashboard-card">
+          <h3>All Appointments</h3>
+          <div id="appointmentsList" class="data-table">
+            <div class="loading">Loading appointments...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users Section -->
+      <div id="usersSection" style="display: none">
+        <div class="dashboard-card">
+          <h3>All Users</h3>
+          <div id="usersList" class="data-table">
+            <div class="loading">Loading users...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+      if (!token || user.role !== "admin") {
+        window.location.href = "/login";
+      }
+
+      document.getElementById("logoutBtn").addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/";
+      });
+
+      function showSection(section) {
+        document.getElementById("statsSection").style.display = "none";
+        document.getElementById("servicesSection").style.display = "none";
+        document.getElementById("staffSection").style.display = "none";
+        document.getElementById("appointmentsSection").style.display = "none";
+        document.getElementById("usersSection").style.display = "none";
+
+        switch (section) {
+          case "services":
+            document.getElementById("servicesSection").style.display = "block";
+            loadServices();
+            break;
+          case "staff":
+            document.getElementById("staffSection").style.display = "block";
+            loadStaff();
+            break;
+          case "appointments":
+            document.getElementById("appointmentsSection").style.display =
+              "block";
+            loadAllAppointments();
+            break;
+          case "users":
+            document.getElementById("usersSection").style.display = "block";
+            loadUsers();
+            break;
+        }
+      }
+
+      async function loadStatistics() {
+        try {
+          const response = await fetch("/api/admin/statistics", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            document.getElementById("totalUsers").textContent = data.data.users;
+            document.getElementById("totalStaff").textContent = data.data.staff;
+            document.getElementById("totalServices").textContent =
+              data.data.services;
+            document.getElementById("totalAppointments").textContent =
+              data.data.appointments.total;
+            document.getElementById("pendingAppointments").textContent =
+              data.data.appointments.pending;
+            document.getElementById("totalRevenue").textContent =
+              "$" + parseFloat(data.data.revenue).toFixed(2);
+          }
+        } catch (error) {
+          console.error("Error loading statistics:", error);
+        }
+      }
+
+      async function loadServices() {
+        try {
+          const response = await fetch("/api/services");
+          const data = await response.json();
+
+          const container = document.getElementById("servicesList");
+          if (data.success && data.data.length > 0) {
+            container.innerHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Duration</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.data
+                                  .map(
+                                    (service) => `
+                                    <tr>
+                                        <td>${service.name}</td>
+                                        <td>${service.duration} mins</td>
+                                        <td>$${service.price}</td>
+                                        <td>${
+                                          service.isActive
+                                            ? "Active"
+                                            : "Inactive"
+                                        }</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteService('${
+                                              service.id
+                                            }')">Delete</button>
+                                        </td>
+                                    </tr>
+                                `
+                                  )
+                                  .join("")}
+                            </tbody>
+                        </table>
+                    `;
+          }
+        } catch (error) {
+          console.error("Error loading services:", error);
+        }
+      }
+
+      async function loadStaff() {
+        try {
+          const response = await fetch("/api/staff");
+          const data = await response.json();
+
+          const container = document.getElementById("staffList");
+          if (data.success && data.data.length > 0) {
+            container.innerHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Specialization</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.data
+                                  .map(
+                                    (staff) => `
+                                    <tr>
+                                        <td>${staff.user.name}</td>
+                                        <td>${staff.user.email}</td>
+                                        <td>${
+                                          staff.specialization || "N/A"
+                                        }</td>
+                                        <td>${
+                                          staff.isActive ? "Active" : "Inactive"
+                                        }</td>
+                                    </tr>
+                                `
+                                  )
+                                  .join("")}
+                            </tbody>
+                        </table>
+                    `;
+          }
+        } catch (error) {
+          console.error("Error loading staff:", error);
+        }
+      }
+
+      async function loadAllAppointments() {
+        try {
+          const response = await fetch("/api/admin/appointments", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await response.json();
+
+          const container = document.getElementById("appointmentsList");
+          if (data.success && data.data.length > 0) {
+            container.innerHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Service</th>
+                                    <th>Staff</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.data
+                                  .map(
+                                    (apt) => `
+                                    <tr>
+                                        <td>${apt.customer.name}</td>
+                                        <td>${apt.service.name}</td>
+                                        <td>${apt.staff.user.name}</td>
+                                        <td>${new Date(
+                                          apt.appointmentDate
+                                        ).toLocaleDateString()}</td>
+                                        <td>${apt.appointmentTime}</td>
+                                        <td>${apt.status}</td>
+                                    </tr>
+                                `
+                                  )
+                                  .join("")}
+                            </tbody>
+                        </table>
+                    `;
+          }
+        } catch (error) {
+          console.error("Error loading appointments:", error);
+        }
+      }
+
+      async function loadUsers() {
+        try {
+          const response = await fetch("/api/admin/users", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await response.json();
+
+          const container = document.getElementById("usersList");
+          if (data.success && data.data.length > 0) {
+            container.innerHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.data
+                                  .map(
+                                    (user) => `
+                                    <tr>
+                                        <td>${user.name}</td>
+                                        <td>${user.email}</td>
+                                        <td>${user.phone || "N/A"}</td>
+                                        <td>${user.role}</td>
+                                        <td>${new Date(
+                                          user.createdAt
+                                        ).toLocaleDateString()}</td>
+                                    </tr>
+                                `
+                                  )
+                                  .join("")}
+                            </tbody>
+                        </table>
+                    `;
+          }
+        } catch (error) {
+          console.error("Error loading users:", error);
+        }
+      }
+
+      function showAddServiceForm() {
+        document.getElementById("addServiceForm").style.display = "block";
+      }
+
+      function hideAddServiceForm() {
+        document.getElementById("addServiceForm").style.display = "none";
+        document.getElementById("serviceForm").reset();
+      }
+
+      function showAddStaffForm() {
+        document.getElementById("addStaffForm").style.display = "block";
+      }
+
+      function hideAddStaffForm() {
+        document.getElementById("addStaffForm").style.display = "none";
+        document.getElementById("staffForm").reset();
+      }
+
+      document
+        .getElementById("serviceForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const formData = {
+            name: document.getElementById("serviceName").value,
+            description: document.getElementById("serviceDescription").value,
+            duration: parseInt(
+              document.getElementById("serviceDuration").value
+            ),
+            price: parseFloat(document.getElementById("servicePrice").value),
+          };
+
+          try {
+            const response = await fetch("/api/services", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+              hideAddServiceForm();
+              loadServices();
+              alert("Service created successfully!");
+            } else {
+              alert("Failed to create service");
+            }
+          } catch (error) {
+            console.error("Error creating service:", error);
+          }
+        });
+
+      document
+        .getElementById("staffForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const formData = {
+            name: document.getElementById("staffName").value,
+            email: document.getElementById("staffEmail").value,
+            password: document.getElementById("staffPassword").value,
+            phone: document.getElementById("staffPhone").value,
+            specialization: document.getElementById("staffSpecialization")
+              .value,
+          };
+
+          try {
+            const response = await fetch("/api/staff", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+              hideAddStaffForm();
+              loadStaff();
+              alert("Staff member added successfully!");
+            } else {
+              alert("Failed to add staff member");
+            }
+          } catch (error) {
+            console.error("Error adding staff:", error);
+          }
+        });
+
+      async function deleteService(serviceId) {
+        if (!confirm("Are you sure you want to delete this service?")) return;
+
+        try {
+          const response = await fetch(`/api/services/${serviceId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (response.ok) {
+            loadServices();
+            alert("Service deleted successfully!");
+          }
+        } catch (error) {
+          console.error("Error deleting service:", error);
+        }
+      }
+
+      loadStatistics();
+    </script>
+  </body>
+</html>

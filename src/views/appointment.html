@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Appointments - Salon Booking System</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container">
+        <div class="logo">
+          <h2>✂️ Glamour Salon</h2>
+        </div>
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/services">Services</a></li>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><a href="/appointments">My Appointments</a></li>
+          <li><a href="#" id="logoutBtn">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="page-header">
+      <div class="container">
+        <h1>My Appointments</h1>
+        <p>View and manage your salon appointments</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="appointments-container">
+        <div class="appointments-header">
+          <h2>All Appointments</h2>
+          <a href="/booking" class="btn btn-primary">Book New Appointment</a>
+        </div>
+
+        <div id="appointmentsList" class="appointments-list">
+          <div class="loading">Loading appointments...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cancel Modal -->
+    <div id="cancelModal" class="modal">
+      <div class="modal-content">
+        <h3>Cancel Appointment</h3>
+        <p>Are you sure you want to cancel this appointment?</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeCancelModal()">
+            No, Keep It
+          </button>
+          <button class="btn btn-danger" id="confirmCancelBtn">
+            Yes, Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="container">
+        <p>&copy; 2024 Glamour Salon. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script>
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/login";
+      }
+
+      let appointmentToCancel = null;
+
+      document.getElementById("logoutBtn").addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/";
+      });
+
+      // Load appointments
+      async function loadAppointments() {
+        try {
+          const response = await fetch("/api/appointments", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const data = await response.json();
+          const container = document.getElementById("appointmentsList");
+
+          if (data.success && data.data.length > 0) {
+            container.innerHTML = data.data
+              .map(
+                (apt) => `
+                <div class="appointment-card">
+                  <div class="appointment-header">
+                    <h3>${apt.service.name}</h3>
+                    <span class="status-badge status-${apt.status}">
+                      ${
+                        apt.status.charAt(0).toUpperCase() + apt.status.slice(1)
+                      }
+                    </span>
+                  </div>
+                  <div class="appointment-details">
+                    <p><strong>📅 Date:</strong> ${new Date(
+                      apt.appointmentDate
+                    ).toLocaleDateString("en-US", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}</p>
+                    <p><strong>🕐 Time:</strong> ${apt.appointmentTime}</p>
+                    <p><strong>⏱️ Duration:</strong> ${
+                      apt.service.duration
+                    } minutes</p>
+                    <p><strong>💰 Price:</strong> $${apt.service.price}</p>
+                    <p><strong>👤 Staff:</strong> ${apt.staff.user.name}</p>
+                    ${
+                      apt.notes
+                        ? `<p><strong>📝 Notes:</strong> ${apt.notes}</p>`
+                        : ""
+                    }
+                  </div>
+                  <div class="appointment-actions">
+                    ${
+                      apt.status === "pending" || apt.status === "confirmed"
+                        ? `<button class="btn btn-danger btn-sm" onclick="showCancelModal('${apt.id}')">
+                        Cancel Appointment
+                      </button>`
+                        : ""
+                    }
+                    ${
+                      apt.status === "completed"
+                        ? `<a href="/reviews/create?appointmentId=${apt.id}" class="btn btn-primary btn-sm">
+                        Leave Review
+                      </a>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              `
+              )
+              .join("");
+          } else {
+            container.innerHTML = `
+              <div class="empty-state">
+                <h3>No Appointments Yet</h3>
+                <p>You haven't booked any appointments.</p>
+                <a href="/booking" class="btn btn-primary">Book Your First Appointment</a>
+              </div>
+            `;
+          }
+        } catch (error) {
+          console.error("Error loading appointments:", error);
+          document.getElementById("appointmentsList").innerHTML = `
+            <div class="empty-state">
+              <p>Error loading appointments. Please try again later.</p>
+            </div>
+          `;
+        }
+      }
+
+      // Show cancel modal
+      function showCancelModal(appointmentId) {
+        appointmentToCancel = appointmentId;
+        document.getElementById("cancelModal").style.display = "flex";
+      }
+
+      // Close cancel modal
+      function closeCancelModal() {
+        appointmentToCancel = null;
+        document.getElementById("cancelModal").style.display = "none";
+      }
+
+      // Confirm cancel
+      document
+        .getElementById("confirmCancelBtn")
+        .addEventListener("click", async () => {
+          if (!appointmentToCancel) return;
+
+          try {
+            const response = await fetch(
+              `/api/appointments/${appointmentToCancel}`,
+              {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            if (response.ok) {
+              closeCancelModal();
+              loadAppointments();
+              alert("Appointment cancelled successfully");
+            } else {
+              alert("Failed to cancel appointment");
+            }
+          } catch (error) {
+            console.error("Error cancelling appointment:", error);
+            alert("An error occurred. Please try again.");
+          }
+        });
+
+      // Close modal when clicking outside
+      window.onclick = function (event) {
+        const modal = document.getElementById("cancelModal");
+        if (event.target === modal) {
+          closeCancelModal();
+        }
+      };
+
+      loadAppointments();
+    </script>
+  </body>
+</html>

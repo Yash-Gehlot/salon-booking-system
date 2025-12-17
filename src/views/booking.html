@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Appointment</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <h2>Book Appointment</h2>
+
+    <form id="bookingForm">
+      <input type="date" id="date" required />
+      <input type="time" id="time" required />
+      <input type="number" id="serviceId" placeholder="Service ID" required />
+      <button type="submit">Book</button>
+    </form>
+
+    <script>
+      document
+        .getElementById("bookingForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const token = localStorage.getItem("token");
+
+          const res = await fetch("/api/appointments", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              date: date.value,
+              time: time.value,
+              serviceId: serviceId.value,
+            }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) return alert(data.message);
+
+          alert("Appointment booked");
+        });
+    </script>
+  </body>
+</html>

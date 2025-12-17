@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Salon Booking System - Home</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container">
+        <div class="logo">
+          <h2>✂️ Glamour Salon</h2>
+        </div>
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/services">Services</a></li>
+          <li><a href="/login">Login</a></li>
+          <li><a href="/register">Register</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <h1>Welcome to Glamour Salon</h1>
+          <p>
+            Experience luxury and style with our professional salon services
+          </p>
+          <div class="cta-buttons">
+            <a href="/booking" class="btn btn-primary">Book Appointment</a>
+            <a href="/services" class="btn btn-secondary">View Services</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="container">
+        <h2>Why Choose Us</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="icon">👥</div>
+            <h3>Expert Stylists</h3>
+            <p>
+              Our team of professional stylists are trained in the latest
+              techniques
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">📅</div>
+            <h3>Easy Booking</h3>
+            <p>Book your appointments online anytime, anywhere</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">💳</div>
+            <h3>Secure Payment</h3>
+            <p>Multiple payment options with secure transaction processing</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">⭐</div>
+            <h3>Quality Service</h3>
+            <p>Premium products and exceptional customer service</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <p>&copy; 2024 Glamour Salon. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script>
+      // Check if user is logged in
+      const token = localStorage.getItem("token");
+      if (token) {
+        // Update nav for logged in users
+        const navLinks = document.querySelector(".nav-links");
+        navLinks.innerHTML = `
+                <li><a href="/">Home</a></li>
+                <li><a href="/services">Services</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/appointments">My Appointments</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+            `;
+
+        // Add logout functionality
+        document
+          .getElementById("logoutBtn")
+          .addEventListener("click", async (e) => {
+            e.preventDefault();
+            try {
+              const response = await fetch("/api/auth/logout", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+
+              if (response.ok) {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                window.location.href = "/";
+              }
+            } catch (error) {
+              console.error("Logout error:", error);
+            }
+          });
+      }
+    </script>
+  </body>
+</html>
