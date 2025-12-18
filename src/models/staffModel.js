@@ -23,7 +23,7 @@ const Staff = (sequelize) => {
     },
     {
       tableName: "staff",
-      timestamps: true,
+      timestamps: false,
     }
   );
 

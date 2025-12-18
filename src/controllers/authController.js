@@ -7,7 +7,7 @@ import {
 
 const { User } = models;
 
-export const register = async (req, res, next) => {
+export const signup = async (req, res, next) => {
   try {
     const { name, email, password, phone } = req.body;
 
@@ -78,21 +78,6 @@ export const logout = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Logged out successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getMe = async (req, res, next) => {
-  try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: { exclude: ["password"] },
-    });
-
-    res.status(200).json({
-      success: true,
-      data: user,
     });
   } catch (error) {
     next(error);

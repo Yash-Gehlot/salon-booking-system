@@ -30,7 +30,7 @@ const Service = (sequelize) => {
     },
     {
       tableName: "services",
-      timestamps: true,
+      timestamps: false,
     }
   );
 

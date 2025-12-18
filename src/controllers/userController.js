@@ -20,13 +20,12 @@ export const getProfile = async (req, res, next) => {
 
 export const updateProfile = async (req, res, next) => {
   try {
-    const { name, phone, profileImage } = req.body;
+    const { name, phone } = req.body;
 
     const user = await User.findByPk(req.user.id);
 
     user.name = name || user.name;
     user.phone = phone || user.phone;
-    user.profileImage = profileImage || user.profileImage;
 
     await user.save();
 

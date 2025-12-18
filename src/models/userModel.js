@@ -28,11 +28,10 @@ const User = (sequelize) => {
         type: DataTypes.ENUM("customer", "staff", "admin"),
         defaultValue: "customer",
       },
-      profileImage: DataTypes.STRING,
     },
     {
       tableName: "users",
-      timestamps: true,
+      timestamps: false,
     }
   );
 

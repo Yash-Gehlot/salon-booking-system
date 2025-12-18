@@ -21,7 +21,7 @@ const Review = (sequelize) => {
     },
     {
       tableName: "reviews",
-      timestamps: true,
+      timestamps: false,
     }
   );
 

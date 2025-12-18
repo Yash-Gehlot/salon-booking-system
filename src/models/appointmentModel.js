@@ -32,7 +32,7 @@ const Appointment = (sequelize) => {
     },
     {
       tableName: "appointments",
-      timestamps: true,
+      timestamps: false,
     }
   );
 

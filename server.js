@@ -10,7 +10,6 @@ import errorHandler from "./src/middlewares/errorHandler.js";
 // Routes imports
 import authRoutes from "./src/routes/authRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
-import serviceRoutes from "./src/routes/serviceRoutes.js";
 import staffRoutes from "./src/routes/staffRoutes.js";
 import appointmentRoutes from "./src/routes/appointmentRoutes.js";
 import paymentRoutes from "./src/routes/paymentRoutes.js";
@@ -35,14 +34,13 @@ app.use(express.static(path.join(__dirname, "src", "public")));
 app.use(express.static(path.join(__dirname, "src", "views")));
 
 // API Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/services", serviceRoutes);
-app.use("/api/staff", staffRoutes);
-app.use("/api/appointments", appointmentRoutes);
-app.use("/api/payments", paymentRoutes);
-app.use("/api/reviews", reviewRoutes);
-app.use("/api/admin", adminRoutes);
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+app.use("/staff", staffRoutes);
+app.use("/appointments", appointmentRoutes);
+app.use("/payments", paymentRoutes);
+app.use("/reviews", reviewRoutes);
+app.use("/admin", adminRoutes);
 
 // View Routes
 app.get("/", (req, res) => {
