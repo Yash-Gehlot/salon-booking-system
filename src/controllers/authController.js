@@ -26,7 +26,6 @@ export const signup = async (req, res, next) => {
       email,
       password: hashedPassword,
       phone,
-      role: "customer",
     });
 
     sendTokenResponse(user, 201, res);
@@ -71,7 +70,6 @@ export const login = async (req, res, next) => {
 export const logout = async (req, res, next) => {
   try {
     res.cookie("token", "none", {
-      expires: new Date(Date.now() + 10 * 1000),
       httpOnly: true,
     });
 
