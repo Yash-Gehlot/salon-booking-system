@@ -9,16 +9,28 @@ const Staff = (sequelize) => {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      userId: {
-        type: DataTypes.UUID,
+      name: {
+        type: DataTypes.STRING,
         allowNull: false,
       },
-      specialization: DataTypes.STRING,
-      bio: DataTypes.TEXT,
-      availability: DataTypes.JSON,
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      phone: {
+        type: DataTypes.STRING,
+      },
+      specialization: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      bio: {
+        type: DataTypes.TEXT,
+      },
       isActive: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true,
+        defaultValue: true, // Used for "Firing" staff without deleting data
       },
     },
     {
@@ -28,17 +40,18 @@ const Staff = (sequelize) => {
   );
 
   StaffModel.associate = (models) => {
-    StaffModel.belongsTo(models.User, { foreignKey: "userId", as: "user" });
+    // Staff can still perform many services
     StaffModel.belongsToMany(models.Service, {
       through: "StaffServices",
       foreignKey: "staffId",
       as: "services",
     });
+
+    // Staff still has appointments assigned to them
     StaffModel.hasMany(models.Appointment, {
       foreignKey: "staffId",
       as: "appointments",
     });
-    StaffModel.hasMany(models.Review, { foreignKey: "staffId", as: "reviews" });
   };
 
   return StaffModel;

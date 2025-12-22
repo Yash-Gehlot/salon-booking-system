@@ -12,7 +12,7 @@ import { protect } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 router.get("/", protect, getAllAppointments);
-router.get("/available-slots", getAvailableSlots);
+router.get("/available-slots", protect, getAvailableSlots);
 router.get("/:id", protect, getAppointment);
 router.post("/", protect, createAppointment);
 router.put("/:id", protect, updateAppointment);

@@ -17,17 +17,12 @@ const User = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-        validate: { isEmail: true },
       },
       password: {
         type: DataTypes.STRING,
         allowNull: false,
       },
       phone: DataTypes.STRING,
-      role: {
-        type: DataTypes.ENUM("customer", "staff", "admin"),
-        defaultValue: "customer",
-      },
     },
     {
       tableName: "users",
@@ -40,10 +35,7 @@ const User = (sequelize) => {
       foreignKey: "customerId",
       as: "appointments",
     });
-    UserModel.hasOne(models.Staff, {
-      foreignKey: "userId",
-      as: "staffProfile",
-    });
+
     UserModel.hasMany(models.Review, {
       foreignKey: "customerId",
       as: "reviews",

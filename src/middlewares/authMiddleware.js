@@ -1,58 +1,38 @@
 import jwt from "jsonwebtoken";
-import config from "../config/config.js";
 import models from "../models/index.js";
 
-const { jwtSecret } = config;
 const { User } = models;
 
 export const protect = async (req, res, next) => {
   try {
-    let token;
+    const authHeader = req.header("Authorization"); //reads the Authorization header from the HTTP request.
 
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
-    ) {
-      token = req.headers.authorization.split(" ")[1];
-    } else if (req.cookies?.token) {
-      token = req.cookies.token;
+    let token;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      //checking if token exist in header or not?
+      token = authHeader.split(" ")[1];
     }
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Not authorized to access this route",
-      });
+      console.log("No token found in request");
+      return res
+        .status(401)
+        .json({ message: "Access denied. No token provided." });
     }
 
-    const decoded = jwt.verify(token, jwtSecret);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findByPk(decoded.id);
+
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User not found",
-      });
+      console.log("User not found for userId:", decoded.userId);
+      return res.status(401).json({ message: "User not found." });
     }
 
-    req.user = user;
+    req.user = user; // This attaches user data to the request object, making it available in next functions.
     next();
-  } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: "Not authorized to access this route",
-    });
+  } catch (err) {
+    console.error("Auth error:", err.message);
+    return res.status(403).json({ message: "Invalid token." });
   }
-};
-
-export const authorize = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: `User role ${req.user.role} is not authorized to access this route`,
-      });
-    }
-    next();
-  };
 };

@@ -9,9 +9,13 @@ const Review = (sequelize) => {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      appointmentId: DataTypes.UUID,
+      appointmentId: {
+        type: DataTypes.UUID,
+        unique: true, // One review per appointment
+      },
       customerId: DataTypes.UUID,
       staffId: DataTypes.UUID,
+      serviceId: DataTypes.UUID, // Added to track which service
       rating: {
         type: DataTypes.INTEGER,
         validate: { min: 1, max: 5 },
@@ -34,7 +38,14 @@ const Review = (sequelize) => {
       foreignKey: "customerId",
       as: "customer",
     });
-    ReviewModel.belongsTo(models.Staff, { foreignKey: "staffId", as: "staff" });
+    ReviewModel.belongsTo(models.Staff, {
+      foreignKey: "staffId",
+      as: "staff",
+    });
+    ReviewModel.belongsTo(models.Service, {
+      foreignKey: "serviceId",
+      as: "service",
+    });
   };
 
   return ReviewModel;

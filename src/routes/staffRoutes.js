@@ -6,14 +6,12 @@ import {
   updateStaff,
   deleteStaff,
 } from "../controllers/staffController.js";
-import { protect, authorize } from "../middlewares/authMiddleware.js";
-
+import { protectAdmin } from "../middlewares/adminAuthMiddleware.js";
 const router = express.Router();
 
-router.get("/", getAllStaff);
-router.get("/:id", getStaff);
-router.post("/", createStaff);
-router.put("/:id", updateStaff);
-router.delete("/:id", deleteStaff);
-
+router.get("/all", getAllStaff);  
+router.get("/profile/:id", protectAdmin, getStaff);  
+router.post("/create", protectAdmin, createStaff); 
+router.put("/update/:id", protectAdmin, updateStaff); 
+router.delete("/delete/:id", protectAdmin, deleteStaff); 
 export default router;
