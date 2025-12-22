@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - LuxeGlow Salon</title>
+    <link rel="stylesheet" href="/css/admin-dashboard.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+  </head>
+  <body>
+    <div class="admin-container">
+      <aside class="sidebar">
+        <div class="logo"><h2>LuxeGlow Admin</h2></div>
+        <nav>
+          <a href="#" class="nav-link active" data-section="stats-section"
+            >Dashboard Stats</a
+          >
+          <a href="#" class="nav-link" data-section="users-section"
+            >Manage Users</a
+          >
+          <a href="#" class="nav-link" data-section="staff-section"
+            >Manage Staff</a
+          >
+          <a href="#" class="nav-link" data-section="services-section"
+            >Manage Services</a
+          >
+          <a href="#" class="nav-link" data-section="appointments-section"
+            >Manage Appointments</a
+          >
+          <a href="#" id="adminLogout">Logout</a>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <section id="stats-section" class="admin-section active">
+          <h1>Dashboard Overview</h1>
+          <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+              <h3>Users</h3>
+              <p id="statUsers">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Services</h3>
+              <p id="statServices">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Revenue</h3>
+              <p id="statRevenue">$0</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="users-section" class="admin-section">
+          <h1>System Users</h1>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </section>
+        <section id="staff-section" class="admin-section">
+          <div class="section-header">
+            <h1>Manage Staff</h1>
+            <button class="btn btn-primary" onclick="openStaffModal()">
+              + Add New Staff
+            </button>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Staff Name</th>
+                <th>Specialization</th>
+                <th>Assigned Services</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="staffTableBody"></tbody>
+          </table>
+        </section>
+        <section id="appointments-section" class="admin-section">
+          <div class="section-header">
+            <h1>Manage Appointments</h1>
+            <div class="filter-buttons">
+              <button class="filter-btn active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="pending">Pending</button>
+              <button class="filter-btn" data-filter="confirmed">
+                Confirmed
+              </button>
+              <button class="filter-btn" data-filter="completed">
+                Completed
+              </button>
+              <button class="filter-btn" data-filter="cancelled">
+                Cancelled
+              </button>
+            </div>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Service</th>
+                <th>Staff</th>
+                <th>Date & Time</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="appointmentsTableBody"></tbody>
+          </table>
+        </section>
+        <div id="staffModal" class="modal">
+          <div class="modal-content">
+            <h2 id="staffModalTitle">Add New Staff</h2>
+            <form id="staffForm">
+              <input type="hidden" id="staffId" />
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Full Name</label
+                  ><input type="text" id="stName" required />
+                </div>
+                <div class="form-group">
+                  <label>Email</label
+                  ><input type="email" id="stEmail" required />
+                </div>
+              </div>
+              <div class="form-row" id="stPasswordContainer">
+                <div class="form-group">
+                  <label>Phone</label><input type="tel" id="stPhone" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Specialization</label
+                ><input
+                  type="text"
+                  id="stSpecialization"
+                  placeholder="e.g. Hair Stylist"
+                />
+              </div>
+              <div class="form-group">
+                <label>Assign Services</label>
+                <select
+                  id="stServices"
+                  multiple
+                  class="multi-select"
+                  style="height: 100px; width: 100%"
+                ></select>
+                <small>Hold Ctrl (Cmd) to select multiple</small>
+              </div>
+              <div class="modal-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="closeStaffModal()"
+                >
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  Save Staff
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <section id="services-section" class="admin-section">
+          <div class="section-header">
+            <h1>Manage Services</h1>
+            <button class="btn btn-primary" onclick="openServiceModal()">
+              + Add Service
+            </button>
+          </div>
+          <div class="services-grid" id="adminServicesGrid"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="serviceModal" class="modal">
+      <div class="modal-content">
+        <h2 id="modalTitle">Add New Service</h2>
+        <form id="serviceForm">
+          <input type="hidden" id="serviceId" />
+          <div class="form-group">
+            <label>Name</label><input type="text" id="sName" required />
+          </div>
+          <div class="form-group">
+            <label>Price ($)</label><input type="number" id="sPrice" required />
+          </div>
+          <div class="form-group">
+            <label>Duration (min)</label
+            ><input type="number" id="sDuration" required />
+          </div>
+          <div class="form-group">
+            <label>Description</label
+            ><textarea id="sDescription" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Image URL</label>
+            <input
+              type="url"
+              id="sImageUrl"
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="closeModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Save Service</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div id="appointmentModal" class="modal">
+      <div class="modal-content">
+        <h2>Edit Appointment</h2>
+        <form id="appointmentForm">
+          <input type="hidden" id="appointmentId" />
+
+          <div class="form-group">
+            <label>Customer</label>
+            <input type="text" id="aptCustomer" disabled />
+          </div>
+
+          <div class="form-group">
+            <label>Service</label>
+            <input type="text" id="aptService" disabled />
+          </div>
+
+          <div class="form-group">
+            <label>Staff</label>
+            <input type="text" id="aptStaff" disabled />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="aptDate" required />
+            </div>
+            <div class="form-group">
+              <label>Time</label>
+              <input type="time" id="aptTime" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Status</label>
+            <select id="aptStatus" required>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea id="aptNotes" rows="3" disabled></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="closeAppointmentModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Update Appointment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Add this to the top of your script section in admin-dashboard.html
+      // Replace the existing axios defaults section with this enhanced version
+
+      const API_URL = "http://localhost:3003/admin";
+      const STAFF_API = "http://localhost:3003/staff";
+      const token = localStorage.getItem("adminToken");
+
+      if (!token) {
+        window.location.href = "/admin-login.html";
+      }
+
+      // Set default authorization header
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      // Add axios interceptor to handle 401/403 errors globally
+      axios.interceptors.response.use(
+        (response) => response,
+        (error) => {
+          if (error.response) {
+            const status = error.response.status;
+
+            // Unauthorized or Forbidden - redirect to login
+            if (status === 401 || status === 403) {
+              console.error(
+                "Authentication failed:",
+                error.response.data.message
+              );
+              alert(
+                error.response.data.message ||
+                  "Session expired. Please login again."
+              );
+              localStorage.removeItem("adminToken");
+              window.location.href = "admin/admin-login.html";
+            }
+          }
+          return Promise.reject(error);
+        }
+      );
+
+      // Rest of your existing code continues here...
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadStats();
+        setupNavigation();
+
+        document
+          .getElementById("serviceForm")
+          .addEventListener("submit", handleServiceSubmit);
+        document.getElementById("adminLogout").addEventListener("click", () => {
+          localStorage.removeItem("adminToken");
+          window.location.href = "http://localhost:3003/";
+        });
+      });
+
+      async function loadStats() {
+        try {
+          const res = await axios.get(`${API_URL}/statistics`); //
+          const data = res.data.data;
+          document.getElementById("statUsers").innerText = data.users;
+          document.getElementById("statServices").innerText = data.services;
+          document.getElementById("statRevenue").innerText = `$${data.revenue}`;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      async function loadUsers() {
+        const res = await axios.get(`${API_URL}/users`); //
+        const users = res.data.data;
+        document.getElementById("usersTableBody").innerHTML = users
+          .map(
+            (u) => `
+        <tr><td>${u.name}</td><td>${u.email}</td> <td>${u.phone}</td></tr>
+      `
+          )
+          .join("");
+      }
+
+      async function loadServices() {
+        const res = await axios.get(`${API_URL}/allServices`); //
+        const services = res.data.data;
+        document.getElementById("adminServicesGrid").innerHTML = services
+          .map(
+            (s) => `
+        <div class="service-card">
+          <h4>${s.name}</h4>
+          <p>$${s.price} | ${s.duration} min</p>
+          <button onclick="editService('${s.id}')">Edit</button>
+          <button class="btn-danger" onclick="deleteService('${s.id}')">Delete</button>
+        </div>
+      `
+          )
+          .join("");
+      }
+
+      async function handleServiceSubmit(e) {
+        e.preventDefault();
+        const id = document.getElementById("serviceId").value;
+        const data = {
+          name: document.getElementById("sName").value,
+          price: document.getElementById("sPrice").value,
+          duration: document.getElementById("sDuration").value,
+          description: document.getElementById("sDescription").value,
+          imageUrl: document.getElementById("sImageUrl").value,
+        };
+
+        try {
+          if (id) await axios.put(`${API_URL}/service/${id}`, data); //
+          else await axios.post(`${API_URL}/createService`, data); //
+          closeModal();
+          loadServices();
+        } catch (e) {
+          alert("Action failed");
+        }
+      }
+
+      function setupNavigation() {
+        document.querySelectorAll(".nav-link").forEach((link) => {
+          link.addEventListener("click", (e) => {
+            document
+              .querySelectorAll(".nav-link")
+              .forEach((l) => l.classList.remove("active"));
+            e.target.classList.add("active");
+
+            document
+              .querySelectorAll(".admin-section")
+              .forEach((s) => s.classList.remove("active"));
+            const target = e.target.dataset.section;
+            document.getElementById(target).classList.add("active");
+
+            if (target === "users-section") loadUsers();
+            if (target === "services-section") loadServices();
+            if (target === "staff-section") loadStaff();
+            if (target === "appointments-section") loadAppointments(); // NEW LINE
+          });
+        });
+      }
+
+      // Load Staff List
+      async function loadStaff() {
+        try {
+          const res = await axios.get("http://localhost:3003/staff/all");
+          const staffList = res.data.data;
+
+          document.getElementById("staffTableBody").innerHTML = staffList
+            .map(
+              (member) => `
+      <tr>
+        <td>
+          <strong>${member.name}</strong><br>
+          <small>${member.email}</small>
+        </td>
+        <td>${member.specialization}</td>
+        <td>${member.services?.map((s) => s.name).join(", ") || "None"}</td>
+        <td>
+          <span class="status-badge ${member.isActive ? "active" : "inactive"}">
+            ${member.isActive ? "Working" : "Fired"}
+          </span>
+        </td>
+        <td>
+          <button class="btn-sm" onclick="editStaff('${
+            member.id
+          }')">Edit</button>
+          <button class="btn-danger btn-sm" onclick="toggleStaffStatus('${
+            member.id
+          }', ${member.isActive})">
+            ${member.isActive ? "Fire Staff" : "Rehire"}
+          </button>
+        </td>
+      </tr>
+    `
+            )
+            .join("");
+        } catch (e) {
+          console.error("Staff load error", e);
+        }
+      }
+
+      // Fire/Deactivate Staff
+      async function toggleStaffStatus(id, currentlyActive) {
+        if (
+          !confirm(
+            `Are you sure you want to ${
+              currentlyActive ? "deactivate" : "reactivate"
+            } this staff member?`
+          )
+        )
+          return;
+        try {
+          await axios.put(`${STAFF_API}/update/${id}`, {
+            isActive: !currentlyActive,
+          });
+          loadStaff();
+        } catch (e) {
+          alert("Failed to update status");
+        }
+      }
+
+      // Handle Form Submit (Add/Edit)
+      document
+        .getElementById("staffForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const id = document.getElementById("staffId").value;
+          const selectedServices = Array.from(
+            document.getElementById("stServices").selectedOptions
+          ).map((o) => o.value);
+
+          const data = {
+            name: document.getElementById("stName").value,
+            email: document.getElementById("stEmail").value,
+            phone: document.getElementById("stPhone").value,
+            specialization: document.getElementById("stSpecialization").value,
+            serviceIds: selectedServices,
+          };
+
+          try {
+            if (id) {
+              await axios.put(`${STAFF_API}/update/${id}`, data);
+            } else {
+              data.password =
+                document.getElementById("stPassword").value || "123456";
+              await axios.post(`${STAFF_API}/create`, data);
+            }
+            closeStaffModal();
+            loadStaff();
+          } catch (e) {
+            alert(e.response?.data?.message || "Action failed");
+          }
+        });
+
+      // Helper: Populate Services in Modal
+      async function populateServiceDropdown() {
+        const res = await axios.get("http://localhost:3003/admin/allServices");
+        const services = res.data.data;
+        document.getElementById("stServices").innerHTML = services
+          .map((s) => `<option value="${s.id}">${s.name}</option>`)
+          .join("");
+      }
+
+      function openStaffModal() {
+        document.getElementById("staffForm").reset();
+        document.getElementById("staffId").value = "";
+        document.getElementById("stPasswordContainer").style.display = "block";
+        populateServiceDropdown();
+        document.getElementById("staffModal").style.display = "flex";
+      }
+
+      function closeStaffModal() {
+        document.getElementById("staffModal").style.display = "none";
+      }
+
+      function openServiceModal() {
+        document.getElementById("serviceForm").reset();
+        document.getElementById("serviceId").value = "";
+        document.getElementById("serviceModal").style.display = "flex";
+      }
+      function closeModal() {
+        document.getElementById("serviceModal").style.display = "none";
+      }
+
+      let allAppointments = [];
+      let currentAppointmentFilter = "all";
+
+      // Load Appointments
+      async function loadAppointments() {
+        try {
+          const res = await axios.get(`${API_URL}/appointments`);
+          allAppointments = res.data.data;
+          displayAppointments();
+        } catch (e) {
+          console.error("Failed to load appointments", e);
+        }
+      }
+
+      // Display Appointments (with filter)
+      function displayAppointments() {
+        const filtered =
+          currentAppointmentFilter === "all"
+            ? allAppointments
+            : allAppointments.filter(
+                (apt) => apt.status === currentAppointmentFilter
+              );
+
+        document.getElementById("appointmentsTableBody").innerHTML = filtered
+          .map(
+            (apt) => `
+      <tr>
+        <td>
+          <strong>${apt.customer?.name || "N/A"}</strong><br>
+          <small>${apt.customer?.email || ""}</small>
+        </td>
+        <td>${apt.service?.name || "N/A"}<br><small>$${
+              apt.service?.price || 0
+            }</small></td>
+        <td>${apt.staff?.name || "N/A"}</td>
+        <td>
+          ${new Date(apt.appointmentDate).toLocaleDateString()}<br>
+          <strong>${apt.appointmentTime}</strong>
+        </td>
+        <td>
+          <span class="status-badge ${apt.status}">
+            ${apt.status.toUpperCase()}
+          </span>
+        </td>
+        <td>
+          <button class="btn-sm" onclick="editAppointment('${
+            apt.id
+          }')">Edit</button>
+          ${
+            apt.status !== "cancelled" && apt.status !== "completed"
+              ? `<button class="btn-danger btn-sm" onclick="cancelAppointment('${apt.id}')">Cancel</button>`
+              : ""
+          }
+        </td>
+      </tr>
+    `
+          )
+          .join("");
+      }
+
+      // Edit Appointment
+      async function editAppointment(id) {
+        const apt = allAppointments.find((a) => a.id === id);
+        if (!apt) return;
+
+        document.getElementById("appointmentId").value = apt.id;
+        document.getElementById("aptCustomer").value =
+          apt.customer?.name || "N/A";
+        document.getElementById("aptService").value =
+          apt.service?.name || "N/A";
+        document.getElementById("aptStaff").value = apt.staff?.name || "N/A";
+        document.getElementById("aptDate").value = apt.appointmentDate;
+        document.getElementById("aptTime").value = apt.appointmentTime;
+        document.getElementById("aptStatus").value = apt.status;
+        document.getElementById("aptNotes").value = apt.notes || "";
+
+        document.getElementById("appointmentModal").style.display = "flex";
+      }
+
+      // Cancel Appointment
+      async function cancelAppointment(id) {
+        if (!confirm("Are you sure you want to cancel this appointment?"))
+          return;
+
+        try {
+          await axios.delete(`http://localhost:3003/appointments/${id}`);
+          alert("Appointment cancelled successfully");
+          loadAppointments();
+        } catch (e) {
+          alert(e.response?.data?.message || "Failed to cancel appointment");
+        }
+      }
+
+      // Handle Appointment Form Submit
+      document
+        .getElementById("appointmentForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const id = document.getElementById("appointmentId").value;
+
+          const data = {
+            appointmentDate: document.getElementById("aptDate").value,
+            appointmentTime: document.getElementById("aptTime").value,
+            status: document.getElementById("aptStatus").value,
+          };
+
+          try {
+            await axios.put(
+              `http://localhost:3003/admin/appointments/${id}`,
+              data
+            );
+            alert("Appointment updated successfully");
+            closeAppointmentModal();
+            loadAppointments();
+          } catch (e) {
+            alert(e.response?.data?.message || "Failed to update appointment");
+          }
+        });
+
+      function closeAppointmentModal() {
+        document.getElementById("appointmentModal").style.display = "none";
+      }
+
+      // Filter Buttons
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            document
+              .querySelectorAll(".filter-btn")
+              .forEach((b) => b.classList.remove("active"));
+            e.target.classList.add("active");
+            currentAppointmentFilter = e.target.dataset.filter;
+            displayAppointments();
+          });
+        });
+      });
+      // Edit Service - Populate Modal
+      async function editService(id) {
+        try {
+          const res = await axios.get(`${API_URL}/service/${id}`);
+          const s = res.data.data;
+
+          document.getElementById("serviceId").value = s.id;
+          document.getElementById("sName").value = s.name;
+          document.getElementById("sPrice").value = s.price;
+          document.getElementById("sDuration").value = s.duration;
+          document.getElementById("sDescription").value = s.description;
+          document.getElementById("sImageUrl").value = s.imageUrl || "";
+
+          document.getElementById("modalTitle").innerText = "Edit Service";
+          document.getElementById("serviceModal").style.display = "flex";
+        } catch (e) {
+          alert("Could not fetch service details");
+        }
+      }
+
+      async function deleteService(id) {
+        if (!confirm("Are you sure you want to deactivate this service?"))
+          return;
+        try {
+          await axios.delete(`${API_URL}/service/${id}`);
+          loadServices();
+        } catch (e) {
+          alert("Delete failed");
+        }
+      }
+      // Edit Staff - Populate Modal
+      async function editStaff(id) {
+        try {
+          const res = await axios.get(`${STAFF_API}/profile/${id}`);
+          const member = res.data.data;
+
+          await populateServiceDropdown(); // Ensure services are loaded in dropdown
+
+          document.getElementById("staffId").value = member.id;
+          document.getElementById("stName").value = member.name;
+          document.getElementById("stEmail").value = member.email;
+          document.getElementById("stPhone").value = member.phone || "";
+          document.getElementById("stSpecialization").value =
+            member.specialization || "";
+
+          // Hide password field during edit for security/cleanliness
+          document.getElementById("stPasswordContainer").style.display = "none";
+
+          // Pre-select assigned services
+          const serviceSelect = document.getElementById("stServices");
+          const assignedIds = member.services.map((s) => s.id.toString());
+
+          Array.from(serviceSelect.options).forEach((option) => {
+            option.selected = assignedIds.includes(option.value.toString());
+          });
+
+          document.getElementById("staffModalTitle").innerText =
+            "Edit Staff Member";
+          document.getElementById("staffModal").style.display = "flex";
+        } catch (e) {
+          console.error(e);
+          alert("Could not fetch staff details");
+        }
+      }
+    </script>
+  </body>
+</html>

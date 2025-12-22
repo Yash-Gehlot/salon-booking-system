@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - LuxeGlow Salon</title>
+    <link rel="stylesheet" href="/css/dashboard.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <h2>LuxeGlow</h2>
+          <p>Salon & Spa</p>
+        </div>
+        <button class="sidebar-close" id="sidebarClose">✕</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#overview" class="nav-item active" data-section="overview">
+          <span class="icon">📊</span>
+          <span>Overview</span>
+        </a>
+
+        <a
+          href="#book-appointment"
+          class="nav-item"
+          data-section="book-appointment"
+        >
+          <span class="icon">📅</span>
+          <span>Book Appointment</span>
+        </a>
+
+        <a href="#appointments" class="nav-item" data-section="appointments">
+          <span class="icon">📋</span>
+          <span>My Appointments</span>
+        </a>
+
+        <a href="#profile" class="nav-item" data-section="profile">
+          <span class="icon">👤</span>
+          <span>Profile</span>
+        </a>
+
+        <a href="#reviews" class="nav-item" data-section="reviews">
+          <span class="icon">⭐</span>
+          <span>Reviews</span>
+        </a>
+
+        <a href="#" class="nav-item" id="logoutBtn">
+          <span class="icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        <div class="header-left">
+          <a href="/index.html" class="back-btn">
+            <span class="icon">⬅</span>
+            <span>Back to Home</span>
+          </a>
+        </div>
+        <div class="header-right">
+          <div class="user-info">
+            <span id="userName">User</span>
+            <div class="user-avatar">
+              <span id="userInitial">U</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Sections -->
+      <div class="content">
+        <!-- Overview Section -->
+        <section id="overview" class="section active">
+          <h1 class="page-title">Dashboard Overview</h1>
+          <p class="page-subtitle">
+            Welcome back! Here's what's happening with your appointments
+          </p>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">📅</div>
+              <div class="stat-info">
+                <h3 id="totalAppointments">0</h3>
+                <p>Total Appointments</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">✓</div>
+              <div class="stat-info">
+                <h3 id="completedAppointments">0</h3>
+                <p>Completed</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">⏳</div>
+              <div class="stat-info">
+                <h3 id="upcomingAppointments">0</h3>
+                <p>Upcoming</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">💰</div>
+              <div class="stat-info">
+                <h3 id="totalSpent">$0</h3>
+                <p>Total Spent</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="recent-appointments">
+            <h2>Upcoming Appointments</h2>
+            <div id="upcomingList" class="appointments-list"></div>
+          </div>
+        </section>
+        <!-- Reviews Section -->
+        <section id="reviews" class="section">
+          <h1 class="page-title">My Reviews</h1>
+          <p class="page-subtitle">Write reviews for completed appointments</p>
+
+          <div id="reviewAlert" class="alert" style="display: none"></div>
+
+          <!-- Tabs -->
+          <div class="review-tabs">
+            <button class="review-tab-btn active" data-tab="write-review">
+              Write Review
+            </button>
+            <button class="review-tab-btn" data-tab="my-reviews">
+              My Reviews
+            </button>
+          </div>
+
+          <!-- Write Review Tab -->
+          <div id="write-review" class="review-tab-content active">
+            <div id="completedAppointmentsList" class="appointments-grid"></div>
+          </div>
+
+          <!-- My Reviews Tab -->
+          <div id="my-reviews" class="review-tab-content">
+            <div id="myReviewsList" class="reviews-grid"></div>
+          </div>
+        </section>
+
+        <!-- Review Modal -->
+        <div id="reviewModal" class="modal" style="display: none">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2>Write a Review</h2>
+              <button class="modal-close" onclick="closeReviewModal()">
+                ×
+              </button>
+            </div>
+            <div class="modal-body">
+              <div
+                id="reviewModalAlert"
+                class="alert"
+                style="display: none"
+              ></div>
+
+              <div class="form-group">
+                <label>Service</label>
+                <input type="text" id="reviewServiceName" readonly />
+              </div>
+
+              <div class="form-group">
+                <label>Staff Member</label>
+                <input type="text" id="reviewStaffName" readonly />
+              </div>
+
+              <div class="form-group">
+                <label>Rating</label>
+                <div class="star-rating" id="starRating">
+                  <span class="star" data-rating="1">☆</span>
+                  <span class="star" data-rating="2">☆</span>
+                  <span class="star" data-rating="3">☆</span>
+                  <span class="star" data-rating="4">☆</span>
+                  <span class="star" data-rating="5">☆</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Your Review (Optional)</label>
+                <textarea
+                  id="reviewComment"
+                  rows="4"
+                  placeholder="Share your experience..."
+                ></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" onclick="closeReviewModal()">
+                Cancel
+              </button>
+              <button
+                class="btn btn-primary"
+                id="submitReviewBtn"
+                onclick="submitReview()"
+              >
+                <span id="reviewSubmitText">Submit Review</span>
+                <span
+                  id="reviewSubmitLoader"
+                  class="loader"
+                  style="display: none"
+                ></span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Book Appointment Section -->
+        <section id="book-appointment" class="section">
+          <h1 class="page-title">Book New Appointment</h1>
+          <p class="page-subtitle">Schedule your next beauty session</p>
+
+          <div id="bookingAlert" class="alert" style="display: none"></div>
+
+          <div class="booking-form-container">
+            <form id="bookingForm" class="booking-form">
+              <div class="form-section">
+                <h3>Select Service</h3>
+                <div class="services-list" id="servicesList">
+                  <p class="info-text">Loading services...</p>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3>Select Staff Member</h3>
+                <div class="staff-list" id="staffList">
+                  <p class="info-text">Please select a service first</p>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3>Select Date & Time</h3>
+                <div class="form-group">
+                  <label>Date</label>
+                  <input type="date" id="appointmentDate" required />
+                </div>
+                <div class="time-slots" id="timeSlots">
+                  <p class="info-text">Please select a date first</p>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3>Additional Information</h3>
+                <div class="form-group">
+                  <label>Special Requests (Optional)</label>
+                  <textarea
+                    id="notes"
+                    rows="4"
+                    placeholder="Any special requests or preferences..."
+                  ></textarea>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg" id="bookBtn">
+                <span id="bookBtnText">Confirm Booking</span>
+                <span
+                  id="bookBtnLoader"
+                  class="loader"
+                  style="display: none"
+                ></span>
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- Appointments Section -->
+        <section id="appointments" class="section">
+          <h1 class="page-title">My Appointments</h1>
+          <p class="page-subtitle">View and manage your appointments</p>
+
+          <div class="appointments-filter">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="pending">Pending</button>
+            <button class="filter-btn" data-filter="confirmed">
+              Confirmed
+            </button>
+            <button class="filter-btn" data-filter="completed">
+              Completed
+            </button>
+            <button class="filter-btn" data-filter="cancelled">
+              Cancelled
+            </button>
+          </div>
+
+          <div id="appointmentsList" class="appointments-grid"></div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="section">
+          <h1 class="page-title">My Profile</h1>
+          <div id="profileAlert" class="alert" style="display: none"></div>
+
+          <div class="profile-card info-display-card">
+            <h3>Current Information</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Full Name</label>
+                <p id="displayFullName">Loading...</p>
+              </div>
+              <div class="info-item">
+                <label>Email Address</label>
+                <p id="displayEmail">Loading...</p>
+              </div>
+              <div class="info-item">
+                <label>Phone Number</label>
+                <p id="displayPhone">Loading...</p>
+              </div>
+            </div>
+          </div>
+
+          <hr class="section-divider" />
+
+          <div class="profile-container">
+            <div class="form-card">
+              <h3>Update Personal Details</h3>
+              <form id="profileForm" class="profile-form">
+                <div class="form-group">
+                  <label>Full Name</label>
+                  <input type="text" id="profileName" required />
+                </div>
+                <div class="form-group">
+                  <label>Phone</label>
+                  <input type="tel" id="profilePhone" required />
+                </div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" id="profileEmail" required />
+                </div>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="profileUpdateBtn"
+                >
+                  <span id="profileBtnText">Save Changes</span>
+                  <span
+                    id="profileBtnLoader"
+                    class="loader"
+                    style="display: none"
+                  ></span>
+                </button>
+              </form>
+            </div>
+
+            <div class="form-card">
+              <h3>Change Password</h3>
+              <form id="passwordForm">
+                <div class="form-group">
+                  <label>Current Password</label>
+                  <input type="password" id="currentPassword" required />
+                </div>
+                <div class="form-group">
+                  <label>New Password</label>
+                  <input type="password" id="newPassword" required />
+                </div>
+                <div class="form-group">
+                  <label>Confirm New Password</label>
+                  <input type="password" id="confirmPassword" required />
+                </div>
+                <button type="submit" class="btn btn-secondary">
+                  Update Password
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+      </div>
+      <!-- Reschedule Modal -->
+      <div id="rescheduleModal" class="modal" style="display: none">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Reschedule Appointment</h2>
+            <button class="modal-close" onclick="closeRescheduleModal()">
+              ×
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="rescheduleAlert" class="alert" style="display: none"></div>
+
+            <div class="form-group">
+              <label>Service</label>
+              <input type="text" id="rescheduleService" readonly />
+            </div>
+
+            <div class="form-group">
+              <label>Staff Member</label>
+              <input type="text" id="rescheduleStaff" readonly />
+            </div>
+
+            <div class="form-group">
+              <label>New Date</label>
+              <input type="date" id="rescheduleDate" required />
+            </div>
+
+            <div class="form-group">
+              <label>New Time</label>
+              <div id="reschedulTimeSlots" class="time-slots">
+                <p class="info-text">Please select a date first</p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeRescheduleModal()">
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              id="confirmRescheduleBtn"
+              onclick="confirmReschedule()"
+            >
+              <span id="rescheduleBtnText">Confirm Reschedule</span>
+              <span
+                id="rescheduleBtnLoader"
+                class="loader"
+                style="display: none"
+              ></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // ============================================
+      // CONFIGURATION & STATE
+      // ============================================
+      const API_URL = "http://localhost:3003";
+      let token = localStorage.getItem("token");
+      let currentUser = null;
+      let allServices = [];
+      let allStaff = [];
+      let allAppointments = [];
+      let selectedService = null;
+      let selectedStaff = null;
+      let selectedDate = null;
+      let selectedTime = null;
+      let currentFilter = "all";
+      let rescheduleAppointmentId = null;
+      let rescheduleSelectedTime = null;
+
+      // Configure axios defaults
+      axios.defaults.baseURL = API_URL;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      // Check authentication
+      if (!token) {
+        window.location.href = "/login.html";
+      }
+
+      // ============================================
+      // INITIALIZATION
+      // ============================================
+      document.addEventListener("DOMContentLoaded", () => {
+        initNavigation();
+        loadUserProfile();
+        loadServices();
+        loadStaff();
+        loadAppointments();
+        setupEventListeners();
+        setMinDate();
+
+        // Handle URL hash navigation
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+          const targetItem = document.querySelector(
+            `.nav-item[data-section="${hash}"]`
+          );
+          if (targetItem) targetItem.click();
+        }
+      });
+
+      // ============================================
+      // DATA LOADING FUNCTIONS
+      // ============================================
+
+      // Load services from backend
+      async function loadServices() {
+        try {
+          const response = await axios.get("/admin/allServices");
+          allServices = response.data.data || response.data;
+          console.log("Loaded services:", allServices); // Debug log
+          displayServicesForBooking();
+        } catch (error) {
+          console.error("Error loading services:", error);
+          const container = document.getElementById("servicesList");
+          if (container) {
+            container.innerHTML =
+              '<p class="info-text">Failed to load services</p>';
+          }
+        }
+      }
+
+      // Load staff from backend
+      async function loadStaff() {
+        try {
+          const response = await axios.get("/staff/all");
+          allStaff = response.data.data || response.data;
+          console.log("Loaded staff:", allStaff); // Debug log
+        } catch (error) {
+          console.error("Error loading staff:", error);
+        }
+      }
+
+      // Load appointmentsw
+      async function loadAppointments() {
+        try {
+          const response = await axios.get("/appointments/");
+          allAppointments = response.data.data || response.data;
+          updateDashboardStats();
+          displayUpcomingAppointments();
+          displayAllAppointments();
+        } catch (error) {
+          console.error("Error loading appointments:", error);
+          const upcomingList = document.getElementById("upcomingList");
+          if (upcomingList) {
+            upcomingList.innerHTML =
+              '<p class="empty-state">Failed to load appointments</p>';
+          }
+        }
+      }
+
+      // Load user profile
+      async function loadUserProfile() {
+        try {
+          const response = await axios.get("/users/profile");
+          const user = response.data.data;
+          currentUser = user;
+          document.getElementById("userName").textContent =
+            user.name || user.email;
+          document.getElementById("userInitial").textContent = (
+            user.name?.[0] || user.email[0]
+          ).toUpperCase();
+
+          // Populate display section
+          document.getElementById("displayFullName").textContent =
+            user.name || "Not set";
+          document.getElementById("displayEmail").textContent = user.email;
+          document.getElementById("displayPhone").textContent =
+            user.phone || "Not set";
+
+          // Populate update form
+          document.getElementById("profileName").value = user.name || "";
+          document.getElementById("profilePhone").value = user.phone || "";
+          document.getElementById("profileEmail").value = user.email || "";
+        } catch (error) {
+          console.error("Error loading profile:", error);
+          if (error.response?.status === 401) {
+            logout();
+          }
+        }
+      }
+
+      // ============================================
+      // DISPLAY FUNCTIONS
+      // ============================================
+
+      // Display services for booking
+      function displayServicesForBooking() {
+        const container = document.getElementById("servicesList");
+
+        if (!container) {
+          console.error("servicesList container not found");
+          return;
+        }
+
+        if (!allServices || allServices.length === 0) {
+          container.innerHTML =
+            '<p class="info-text">No services available</p>';
+          return;
+        }
+
+        container.innerHTML = allServices
+          .map(
+            (service) => `
+      <div class="service-option" data-service-id="${service.id}">
+        <div class="service-option-header">
+          <h4>${service.name}</h4>
+          <span class="service-price">$${service.price}</span>
+        </div>
+        <p class="service-description">${
+          service.description || "No description"
+        }</p>
+        <p class="service-duration">⏱ ${service.duration} minutes</p>
+      </div>
+    `
+          )
+          .join("");
+
+        // Attach click handlers to service options
+        document.querySelectorAll(".service-option").forEach((option) => {
+          option.addEventListener("click", () => {
+            // Remove selection from all services
+            document
+              .querySelectorAll(".service-option")
+              .forEach((o) => o.classList.remove("selected"));
+
+            // Select clicked service
+            option.classList.add("selected");
+
+            // Store selected service using service.id (not _id!)
+            selectedService = allServices.find(
+              (s) => s.id === option.dataset.serviceId
+            );
+            console.log("Selected service:", selectedService); // Debug log
+
+            // Clear staff and time selections
+            selectedStaff = null;
+            selectedTime = null;
+            document
+              .querySelectorAll(".staff-option")
+              .forEach((o) => o.classList.remove("selected"));
+            document
+              .querySelectorAll(".time-slot")
+              .forEach((t) => t.classList.remove("selected"));
+
+            // Display staff list
+            displayStaffList();
+
+            // Reset time slots
+            const timeSlotsContainer = document.getElementById("timeSlots");
+            if (timeSlotsContainer) {
+              timeSlotsContainer.innerHTML =
+                '<p class="info-text">Please select a staff member and date</p>';
+            }
+          });
+        });
+      }
+
+      // Display staff list (filter by service)
+      function displayStaffList() {
+        const container = document.getElementById("staffList");
+
+        if (!container) {
+          console.error("staffList container not found");
+          return;
+        }
+
+        if (!selectedService) {
+          container.innerHTML =
+            '<p class="info-text">Please select a service first</p>';
+          return;
+        }
+
+        // Filter staff based on specialization
+        const filteredStaff = allStaff.filter((staff) => {
+          return staff.isActive !== false;
+
+          const specialty = (staff.specialization || "").toLowerCase();
+          const serviceName = (selectedService.name || "").toLowerCase();
+
+          // Match if specialization contains service name or vice versa
+          return (
+            specialty.includes(serviceName) ||
+            serviceName.includes(specialty) ||
+            specialty === "all" ||
+            specialty === "all-rounder"
+          );
+        });
+
+        if (filteredStaff.length === 0) {
+          container.innerHTML = `<p class="info-text">No staff available for ${selectedService.name}. Please select another service.</p>`;
+          return;
+        }
+
+        container.innerHTML = filteredStaff
+          .map(
+            (staff) => `
+      <div class="staff-option" data-staff-id="${staff.id}">
+        <div class="staff-avatar">${(
+          staff.name?.[0] || "S"
+        ).toUpperCase()}</div>
+        <div class="staff-info">
+          <h4>${staff.name}</h4>
+          <p>${staff.specialization || "Beauty Specialist"}</p>
+        </div>
+      </div>
+    `
+          )
+          .join("");
+
+        // Attach click handlers to staff options
+        document.querySelectorAll(".staff-option").forEach((option) => {
+          option.addEventListener("click", () => {
+            // Remove selection from all staff
+            document
+              .querySelectorAll(".staff-option")
+              .forEach((o) => o.classList.remove("selected"));
+
+            // Select clicked staff
+            option.classList.add("selected");
+
+            // Store selected staff using staff.id (not _id!)
+            selectedStaff = allStaff.find(
+              (s) => s.id === option.dataset.staffId
+            );
+            console.log("Selected staff:", selectedStaff); // Debug log
+
+            // Clear time selection
+            selectedTime = null;
+            document
+              .querySelectorAll(".time-slot")
+              .forEach((t) => t.classList.remove("selected"));
+
+            // If date is already selected, load available slots
+            if (selectedDate) {
+              getAvailableSlots(selectedDate);
+            }
+          });
+        });
+      }
+
+      // Set minimum date for booking
+      function setMinDate() {
+        const dateInput = document.getElementById("appointmentDate");
+        if (dateInput) {
+          const today = new Date().toISOString().split("T")[0];
+          dateInput.setAttribute("min", today);
+        }
+      }
+
+      // Get available time slots
+      async function getAvailableSlots(date) {
+        const container = document.getElementById("timeSlots");
+
+        if (!container) {
+          console.error("timeSlots container not found");
+          return;
+        }
+
+        if (!selectedService || !selectedStaff) {
+          container.innerHTML =
+            '<p class="info-text">Please select a service and staff member first</p>';
+          return;
+        }
+
+        // Show loading state
+        container.innerHTML = "";
+
+        try {
+          const response = await axios.get("/appointments/available-slots", {
+            params: {
+              date: date,
+              serviceId: selectedService.id, // Using .id not ._id
+              staffId: selectedStaff.id, // Using .id not ._id
+            },
+          });
+
+          const slots = response.data.data || response.data;
+          console.log("Available slots:", slots); // Debug log
+
+          if (!slots || slots.length === 0) {
+            container.innerHTML =
+              '<p class="info-text">No available slots for this date. Please try another date.</p>';
+            return;
+          }
+
+          container.innerHTML = slots
+            .map(
+              (slot) => `
+        <button type="button" class="time-slot" data-time="${slot}">${slot}</button>
+      `
+            )
+            .join("");
+
+          // Attach click handlers to time slots
+          document.querySelectorAll(".time-slot").forEach((slot) => {
+            slot.addEventListener("click", () => {
+              // Remove selection from all slots
+              document
+                .querySelectorAll(".time-slot")
+                .forEach((s) => s.classList.remove("selected"));
+
+              // Select clicked slot
+              slot.classList.add("selected");
+              selectedTime = slot.dataset.time;
+              console.log("Selected time:", selectedTime); // Debug log
+            });
+          });
+        } catch (error) {
+          console.error("Error loading time slots:", error);
+          container.innerHTML =
+            '<p class="info-text">Failed to load time slots. Please try again.</p>';
+        }
+      }
+
+      // ============================================
+      // BOOKING FUNCTION
+      // ============================================
+
+      async function bookAppointment() {
+        // Validate all selections
+        if (!selectedService) {
+          showAlert("bookingAlert", "Please select a service", "error");
+          return;
+        }
+
+        if (!selectedStaff) {
+          showAlert("bookingAlert", "Please select a staff member", "error");
+          return;
+        }
+
+        if (!selectedDate) {
+          showAlert("bookingAlert", "Please select a date", "error");
+          return;
+        }
+
+        if (!selectedTime) {
+          showAlert("bookingAlert", "Please select a time slot", "error");
+          return;
+        }
+
+        const bookBtn = document.getElementById("bookBtn");
+        const btnText = document.getElementById("bookBtnText");
+        const btnLoader = document.getElementById("bookBtnLoader");
+
+        // Disable button and show loader
+        bookBtn.disabled = true;
+        btnText.style.display = "none";
+        btnLoader.style.display = "inline-block";
+
+        try {
+          const appointmentData = {
+            serviceId: selectedService.id,
+            staffId: selectedStaff.id,
+            appointmentDate: selectedDate,
+            appointmentTime: selectedTime,
+            notes: document.getElementById("notes")?.value || "",
+          };
+
+          console.log("Creating payment order with data:", appointmentData);
+
+          // Step 1: Create Razorpay Order
+          const orderResponse = await axios.post(
+            "/payments/create-order",
+            appointmentData
+          );
+          const {
+            orderId,
+            amount,
+            currency,
+            keyId,
+            appointmentData: aptData,
+          } = orderResponse.data.data;
+
+          console.log("Razorpay order created:", orderId);
+
+          // Step 2: Open Razorpay Checkout
+          const options = {
+            key: keyId,
+            amount: amount,
+            currency: currency,
+            name: "LuxeGlow Salon",
+            description: `${selectedService.name} - ${selectedStaff.name}`,
+            order_id: orderId,
+            handler: async function (response) {
+              console.log("Payment successful:", response);
+
+              // Step 3: Verify payment and create appointment
+              try {
+                const verifyResponse = await axios.post("/payments/verify", {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  appointmentData: aptData,
+                });
+
+                console.log("Appointment created:", verifyResponse.data);
+
+                // Show success message
+                showAlert(
+                  "bookingAlert",
+                  "Payment successful! Appointment booked.",
+                  "success"
+                );
+
+                // Reset form
+                document.getElementById("bookingForm").reset();
+
+                // Clear selections
+                selectedService = null;
+                selectedStaff = null;
+                selectedDate = null;
+                selectedTime = null;
+
+                // Clear visual selections
+                document
+                  .querySelectorAll(".service-option")
+                  .forEach((o) => o.classList.remove("selected"));
+                document
+                  .querySelectorAll(".staff-option")
+                  .forEach((o) => o.classList.remove("selected"));
+                document
+                  .querySelectorAll(".time-slot")
+                  .forEach((t) => t.classList.remove("selected"));
+
+                // Reset containers
+                document.getElementById("timeSlots").innerHTML =
+                  '<p class="info-text">Please select a service, staff, and date</p>';
+                document.getElementById("staffList").innerHTML =
+                  '<p class="info-text">Please select a service first</p>';
+
+                // Reload appointments
+                await loadAppointments();
+
+                // Navigate to appointments section after 2 seconds
+                setTimeout(() => {
+                  const appointmentsNav = document.querySelector(
+                    '[data-section="appointments"]'
+                  );
+                  if (appointmentsNav) appointmentsNav.click();
+                }, 2000);
+              } catch (verifyError) {
+                console.error("Verification error:", verifyError);
+                showAlert(
+                  "bookingAlert",
+                  "Payment successful but appointment creation failed. Please contact support.",
+                  "error"
+                );
+              }
+            },
+            prefill: {
+              name: currentUser?.name || "",
+              email: currentUser?.email || "",
+              contact: currentUser?.phone || "",
+            },
+            theme: {
+              color: "#667eea",
+            },
+            modal: {
+              ondismiss: function () {
+                console.log("Payment cancelled by user");
+                showAlert(
+                  "bookingAlert",
+                  "Payment cancelled. Please try again.",
+                  "error"
+                );
+
+                // Re-enable button
+                bookBtn.disabled = false;
+                btnText.style.display = "inline";
+                btnLoader.style.display = "none";
+              },
+            },
+          };
+
+          const razorpayInstance = new Razorpay(options);
+          razorpayInstance.open();
+
+          // Note: Button will be re-enabled in modal.ondismiss or after successful payment
+        } catch (error) {
+          console.error("Error initiating payment:", error);
+          const errorMessage =
+            error.response?.data?.message ||
+            "Failed to initiate payment. Please try again.";
+          showAlert("bookingAlert", errorMessage, "error");
+
+          // Re-enable button and hide loader
+          bookBtn.disabled = false;
+          btnText.style.display = "inline";
+          btnLoader.style.display = "none";
+        }
+      }
+
+      // ============================================
+      // EVENT LISTENERS SETUP
+      // ============================================
+
+      function setupEventListeners() {
+        // Date change handler
+        setupReviewTabs();
+        const dateInput = document.getElementById("appointmentDate");
+        if (dateInput) {
+          dateInput.addEventListener("change", (e) => {
+            selectedDate = e.target.value;
+            console.log("Selected date:", selectedDate); // Debug log
+
+            // Clear time selection
+            selectedTime = null;
+            document
+              .querySelectorAll(".time-slot")
+              .forEach((t) => t.classList.remove("selected"));
+
+            // Load available slots if service and staff are selected
+            if (selectedService && selectedStaff) {
+              getAvailableSlots(selectedDate);
+            } else {
+              const timeSlotsContainer = document.getElementById("timeSlots");
+              if (timeSlotsContainer) {
+                timeSlotsContainer.innerHTML =
+                  '<p class="info-text">Please select a service and staff member first</p>';
+              }
+            }
+          });
+        }
+
+        // Booking form submit
+        const bookingForm = document.getElementById("bookingForm");
+        if (bookingForm) {
+          bookingForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await bookAppointment();
+          });
+        }
+
+        // Profile form submit
+        const profileForm = document.getElementById("profileForm");
+        if (profileForm) {
+          profileForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await updateProfile();
+          });
+        }
+
+        // Password form submit
+        const passwordForm = document.getElementById("passwordForm");
+        if (passwordForm) {
+          passwordForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await changePassword();
+          });
+        }
+
+        // Filter buttons for appointments
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document
+              .querySelectorAll(".filter-btn")
+              .forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentFilter = btn.dataset.filter;
+            displayAllAppointments();
+          });
+        });
+
+        // Logout button
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (
+              confirm("Are you sure you want to log out of LuxeGlow Salon?")
+            ) {
+              logout();
+            }
+          });
+        }
+      }
+
+      // ============================================
+      // HELPER FUNCTIONS
+      // ============================================
+
+      function showAlert(containerId, message, type) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        container.textContent = message;
+        container.className = `alert alert-${type}`;
+        container.style.display = "block";
+
+        setTimeout(() => {
+          container.style.display = "none";
+        }, 5000);
+      }
+
+      function showNotification(message, type = "info") {
+        const notification = document.createElement("div");
+        notification.style.cssText = `
+    position: fixed; top: 20px; right: 20px; padding: 15px 25px;
+    background: ${
+      type === "success" ? "#00cc66" : type === "error" ? "#ff4444" : "#3498db"
+    };
+    color: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 10000; animation: slideIn 0.3s ease;
+  `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          notification.style.animation = "slideOut 0.3s ease";
+          setTimeout(() => notification.remove(), 300);
+        }, 3000);
+      }
+
+      async function logout() {
+        try {
+          await axios.post("/auth/logout");
+        } catch (error) {
+          console.error("Server-side logout failed", error);
+        } finally {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          window.location.href = "/login.html";
+        }
+      }
+
+      // ============================================
+      // NAVIGATION
+      // ============================================
+
+      function initNavigation() {
+        const navItems = document.querySelectorAll(".nav-item");
+        const sections = document.querySelectorAll(".section");
+        const sidebar = document.getElementById("sidebar");
+
+        navItems.forEach((item) => {
+          item.addEventListener("click", (e) => {
+            if (item.id === "logoutBtn") return;
+
+            e.preventDefault();
+            const targetSection = item.getAttribute("data-section");
+
+            if (targetSection) {
+              navItems.forEach((nav) => nav.classList.remove("active"));
+              item.classList.add("active");
+
+              sections.forEach((section) => section.classList.remove("active"));
+              document.getElementById(targetSection)?.classList.add("active");
+
+              if (window.innerWidth <= 768 && sidebar) {
+                sidebar.classList.remove("active");
+              }
+            }
+          });
+        });
+      }
+
+      // ============================================
+      // DASHBOARD STATS & DISPLAY
+      // ============================================
+
+      function updateDashboardStats() {
+        const total = allAppointments.length;
+        const completed = allAppointments.filter(
+          (a) => a.status === "completed"
+        ).length;
+        const upcoming = allAppointments.filter(
+          (a) =>
+            (a.status === "pending" || a.status === "confirmed") &&
+            new Date(a.appointmentDate) >= new Date()
+        ).length;
+        // Convert the price to a number using parseFloat to avoid string concatenation
+        const totalSpent = allAppointments
+          .filter((a) => a.status === "completed")
+          .reduce((sum, a) => {
+            const price = parseFloat(a.service?.price) || 0;
+            return sum + price;
+          }, 0);
+
+        // Update the display with 2 decimal places
+        const totalSpentElem = document.getElementById("totalSpent");
+        if (totalSpentElem) {
+          totalSpentElem.textContent = `$${totalSpent.toFixed(2)}`;
+        }
+
+        document.getElementById("totalAppointments").textContent = total;
+        document.getElementById("completedAppointments").textContent =
+          completed;
+        document.getElementById("upcomingAppointments").textContent = upcoming;
+      }
+
+      function displayUpcomingAppointments() {
+        const container = document.getElementById("upcomingList");
+        if (!container) return;
+
+        const upcoming = allAppointments
+          .filter(
+            (a) =>
+              (a.status === "pending" || a.status === "confirmed") &&
+              new Date(a.appointmentDate) >= new Date()
+          )
+          .sort(
+            (a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate)
+          )
+          .slice(0, 5);
+
+        if (upcoming.length === 0) {
+          container.innerHTML =
+            '<p class="empty-state">No upcoming appointments</p>';
+          return;
+        }
+
+        container.innerHTML = upcoming
+          .map(
+            (apt) => `
+      <div class="appointment-mini-card">
+        <div class="appointment-mini-header">
+          <h4>${apt.service?.name || "Service"}</h4>
+          <span class="status-badge status-${apt.status}">${apt.status}</span>
+        </div>
+        <p class="appointment-mini-date">📅 ${new Date(
+          apt.appointmentDate
+        ).toLocaleDateString()} at ${apt.appointmentTime}</p>
+        <p class="appointment-mini-staff">👤 ${apt.staff?.name || "Staff"}</p>
+      </div>
+    `
+          )
+          .join("");
+      }
+
+      function displayAllAppointments() {
+        const container = document.getElementById("appointmentsList");
+        if (!container) return;
+
+        let filtered = allAppointments;
+
+        if (currentFilter !== "all") {
+          filtered = allAppointments.filter((a) => a.status === currentFilter);
+        }
+
+        if (filtered.length === 0) {
+          container.innerHTML =
+            '<p class="empty-state">No appointments found</p>';
+          return;
+        }
+
+        filtered.sort(
+          (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
+        );
+
+        container.innerHTML = filtered
+          .map(
+            (apt) => `
+      <div class="appointment-card">
+        <div class="appointment-header">
+          <h3>${apt.service?.name || "Service"}</h3>
+          <span class="status-badge status-${apt.status}">${apt.status}</span>
+        </div>
+        <div class="appointment-body">
+          <p><strong>Date:</strong> ${new Date(
+            apt.appointmentDate
+          ).toLocaleDateString()}</p>
+          <p><strong>Time:</strong> ${apt.appointmentTime}</p>
+          <p><strong>Staff:</strong> ${apt.staff?.name || "Staff"}</p>
+          <p><strong>Price:</strong> $${apt.service?.price || 0}</p>
+          ${apt.notes ? `<p><strong>Notes:</strong> ${apt.notes}</p>` : ""}
+        </div>
+         <div class="appointment-actions">
+          ${
+            apt.status === "pending" || apt.status === "confirmed"
+              ? `
+                <button class="btn btn-sm btn-primary" onclick="openRescheduleModal('${apt.id}')">Reschedule</button>
+                <button class="btn btn-sm btn-danger" onclick="cancelAppointment('${apt.id}')">Cancel</button>
+              `
+              : ""
+          }
+        </div>
+      </div>
+    `
+          )
+          .join("");
+      }
+
+      async function cancelAppointment(id) {
+        if (!confirm("Are you sure you want to cancel this appointment?"))
+          return;
+
+        try {
+          await axios.delete(`/appointments/${id}`);
+          showNotification("Appointment cancelled successfully", "success");
+          await loadAppointments();
+        } catch (error) {
+          console.error("Error cancelling appointment:", error);
+          showNotification(
+            error.response?.data?.message || "Failed to cancel appointment",
+            "error"
+          );
+        }
+      }
+
+      // ============================================
+      // RESCHEDULE FUNCTIONS
+      // ============================================
+
+      async function openRescheduleModal(appointmentId) {
+        const appointment = allAppointments.find((a) => a.id === appointmentId);
+
+        if (!appointment) {
+          showNotification("Appointment not found", "error");
+          return;
+        }
+
+        rescheduleAppointmentId = appointmentId;
+        rescheduleSelectedTime = null;
+
+        // Populate modal with current appointment details
+        document.getElementById("rescheduleService").value =
+          appointment.service?.name || "N/A";
+        document.getElementById("rescheduleStaff").value =
+          appointment.staff?.name || "N/A";
+        document.getElementById("rescheduleDate").value = "";
+        document.getElementById("reschedulTimeSlots").innerHTML =
+          '<p class="info-text">Please select a date first</p>';
+
+        // Set minimum date
+        const rescheduleDate = document.getElementById("rescheduleDate");
+        const today = new Date().toISOString().split("T")[0];
+        rescheduleDate.setAttribute("min", today);
+
+        // Show modal
+        document.getElementById("rescheduleModal").style.display = "flex";
+
+        // Add date change listener
+        rescheduleDate.onchange = async (e) => {
+          const selectedDate = e.target.value;
+          await loadRescheduleTimeSlots(appointment.staff.id, selectedDate);
+        };
+      }
+
+      async function loadRescheduleTimeSlots(staffId, date) {
+        const container = document.getElementById("reschedulTimeSlots");
+        container.innerHTML =
+          '<p class="info-text">Loading available slots...</p>';
+
+        try {
+          const response = await axios.get("/appointments/available-slots", {
+            params: { staffId, date },
+          });
+
+          const slots = response.data.data || response.data;
+
+          if (!slots || slots.length === 0) {
+            container.innerHTML =
+              '<p class="info-text">No available slots for this date.</p>';
+            return;
+          }
+
+          container.innerHTML = slots
+            .map(
+              (slot) => `
+            <button type="button" class="time-slot" data-time="${slot}">${slot}</button>
+          `
+            )
+            .join("");
+
+          // Attach click handlers
+          document
+            .querySelectorAll("#reschedulTimeSlots .time-slot")
+            .forEach((slot) => {
+              slot.addEventListener("click", () => {
+                document
+                  .querySelectorAll("#reschedulTimeSlots .time-slot")
+                  .forEach((s) => s.classList.remove("selected"));
+                slot.classList.add("selected");
+                rescheduleSelectedTime = slot.dataset.time;
+              });
+            });
+        } catch (error) {
+          console.error("Error loading time slots:", error);
+          container.innerHTML =
+            '<p class="info-text">Failed to load time slots.</p>';
+        }
+      }
+
+      function closeRescheduleModal() {
+        document.getElementById("rescheduleModal").style.display = "none";
+        rescheduleAppointmentId = null;
+        rescheduleSelectedTime = null;
+        document.getElementById("rescheduleAlert").style.display = "none";
+      }
+
+      async function confirmReschedule() {
+        const newDate = document.getElementById("rescheduleDate").value;
+
+        if (!newDate) {
+          showAlert("rescheduleAlert", "Please select a date", "error");
+          return;
+        }
+
+        if (!rescheduleSelectedTime) {
+          showAlert("rescheduleAlert", "Please select a time slot", "error");
+          return;
+        }
+
+        const btn = document.getElementById("confirmRescheduleBtn");
+        const btnText = document.getElementById("rescheduleBtnText");
+        const btnLoader = document.getElementById("rescheduleBtnLoader");
+
+        btn.disabled = true;
+        btnText.style.display = "none";
+        btnLoader.style.display = "inline-block";
+
+        try {
+          await axios.put(`/appointments/${rescheduleAppointmentId}`, {
+            appointmentDate: newDate,
+            appointmentTime: rescheduleSelectedTime,
+          });
+
+          showNotification("Appointment rescheduled successfully!", "success");
+          closeRescheduleModal();
+          await loadAppointments();
+        } catch (error) {
+          console.error("Error rescheduling:", error);
+          showAlert(
+            "rescheduleAlert",
+            error.response?.data?.message || "Failed to reschedule",
+            "error"
+          );
+        } finally {
+          btn.disabled = false;
+          btnText.style.display = "inline";
+          btnLoader.style.display = "none";
+        }
+      }
+
+      // ============================================
+      // PROFILE UPDATE FUNCTIONS
+      // ============================================
+
+      async function updateProfile() {
+        const btn = document.getElementById("profileUpdateBtn");
+        const btnText = document.getElementById("profileBtnText");
+        const btnLoader = document.getElementById("profileBtnLoader");
+
+        btn.disabled = true;
+        btnText.style.display = "none";
+        btnLoader.style.display = "inline-block";
+
+        try {
+          await axios.put("/users/profile", {
+            name: document.getElementById("profileName").value,
+            phone: document.getElementById("profilePhone").value,
+            email: document.getElementById("profileEmail").value,
+          });
+
+          showAlert("profileAlert", "Profile updated successfully!", "success");
+          await loadUserProfile();
+        } catch (error) {
+          showAlert(
+            "profileAlert",
+            error.response?.data?.message || "Update failed",
+            "error"
+          );
+        } finally {
+          btn.disabled = false;
+          btnText.style.display = "inline";
+          btnLoader.style.display = "none";
+        }
+      }
+
+      async function changePassword() {
+        const currentPassword =
+          document.getElementById("currentPassword").value;
+        const newPassword = document.getElementById("newPassword").value;
+        const confirmPassword =
+          document.getElementById("confirmPassword").value;
+
+        if (newPassword !== confirmPassword) {
+          showNotification("Passwords do not match", "error");
+          return;
+        }
+
+        try {
+          const response = await axios.put("/users/password", {
+            currentPassword,
+            newPassword,
+          });
+
+          showNotification(
+            response.data.message || "Password updated!",
+            "success"
+          );
+          document.getElementById("passwordForm").reset();
+        } catch (error) {
+          showNotification(
+            error.response?.data?.message || "Password update failed",
+            "error"
+          );
+        }
+      }
+      // ============================================
+      // REVIEW FUNCTIONS
+      // ============================================
+
+      let currentReviewAppointmentId = null;
+      let selectedRating = 0;
+
+      // Load completed appointments for review
+      async function loadCompletedAppointments() {
+        try {
+          const response = await axios.get("/appointments");
+          const appointments = response.data.data || response.data;
+
+          // Filter completed appointments
+          const completed = appointments.filter(
+            (a) => a.status === "completed"
+          );
+
+          // Check which ones already have reviews
+          const reviewsResponse = await axios.get("/reviews/my-reviews");
+          const myReviews = reviewsResponse.data.data || [];
+          const reviewedAppointmentIds = myReviews.map((r) => r.appointmentId);
+
+          // Filter out already reviewed appointments
+          const unreviewed = completed.filter(
+            (a) => !reviewedAppointmentIds.includes(a.id)
+          );
+
+          displayCompletedAppointments(unreviewed);
+        } catch (error) {
+          console.error("Error loading completed appointments:", error);
+          const container = document.getElementById(
+            "completedAppointmentsList"
+          );
+          if (container) {
+            container.innerHTML =
+              '<p class="empty-state">Failed to load appointments</p>';
+          }
+        }
+      }
+
+      // Display completed appointments
+      function displayCompletedAppointments(appointments) {
+        const container = document.getElementById("completedAppointmentsList");
+        if (!container) return;
+
+        if (appointments.length === 0) {
+          container.innerHTML =
+            '<p class="empty-state">No completed appointments to review</p>';
+          return;
+        }
+
+        container.innerHTML = appointments
+          .map(
+            (apt) => `
+    <div class="appointment-card">
+      <div class="appointment-header">
+        <h3>${apt.service?.name || "Service"}</h3>
+        <span class="status-badge status-completed">Completed</span>
+      </div>
+      <div class="appointment-body">
+        <p><strong>Date:</strong> ${new Date(
+          apt.appointmentDate
+        ).toLocaleDateString()}</p>
+        <p><strong>Time:</strong> ${apt.appointmentTime}</p>
+        <p><strong>Staff:</strong> ${apt.staff?.name || "Staff"}</p>
+        <p><strong>Price:</strong> $${apt.service?.price || 0}</p>
+      </div>
+      <div class="appointment-actions">
+        <button class="btn btn-primary" onclick="openReviewModal('${apt.id}')">
+          Write Review
+        </button>
+      </div>
+    </div>
+  `
+          )
+          .join("");
+      }
+
+      // Load user's reviews
+      async function loadMyReviews() {
+        try {
+          const response = await axios.get("/reviews/my-reviews");
+          const reviews = response.data.data || [];
+          displayMyReviews(reviews);
+        } catch (error) {
+          console.error("Error loading reviews:", error);
+          const container = document.getElementById("myReviewsList");
+          if (container) {
+            container.innerHTML =
+              '<p class="empty-state">Failed to load reviews</p>';
+          }
+        }
+      }
+
+      // Display user's reviews
+      function displayMyReviews(reviews) {
+        const container = document.getElementById("myReviewsList");
+        if (!container) return;
+
+        if (reviews.length === 0) {
+          container.innerHTML =
+            '<p class="empty-state">You haven\'t written any reviews yet</p>';
+          return;
+        }
+
+        container.innerHTML = reviews
+          .map(
+            (review) => `
+    <div class="review-card">
+      <div class="review-header">
+        <div>
+          <h3>${review.appointment?.service?.name || "Service"}</h3>
+          <p class="review-staff">with ${review.staff?.name || "Staff"}</p>
+        </div>
+        <div class="review-stars">${"★".repeat(review.rating)}${"☆".repeat(
+              5 - review.rating
+            )}</div>
+      </div>
+      <div class="review-body">
+        <p class="review-date">${new Date(
+          review.appointment?.appointmentDate
+        ).toLocaleDateString()}</p>
+        ${
+          review.comment
+            ? `<p class="review-comment">"${review.comment}"</p>`
+            : ""
+        }
+        ${
+          review.response
+            ? `
+          <div class="review-response">
+            <strong>Staff Response:</strong>
+            <p>${review.response}</p>
+          </div>
+        `
+            : ""
+        }
+      </div>
+    </div>
+  `
+          )
+          .join("");
+      }
+
+      // Open review modal
+      function openReviewModal(appointmentId) {
+        const appointment = allAppointments.find((a) => a.id === appointmentId);
+        if (!appointment) {
+          showNotification("Appointment not found", "error");
+          return;
+        }
+
+        currentReviewAppointmentId = appointmentId;
+        selectedRating = 0;
+
+        document.getElementById("reviewServiceName").value =
+          appointment.service?.name || "";
+        document.getElementById("reviewStaffName").value =
+          appointment.staff?.name || "";
+        document.getElementById("reviewComment").value = "";
+
+        // Reset stars
+        document.querySelectorAll("#starRating .star").forEach((star) => {
+          star.textContent = "☆";
+          star.classList.remove("active");
+        });
+
+        document.getElementById("reviewModal").style.display = "flex";
+      }
+
+      // Close review modal
+      function closeReviewModal() {
+        document.getElementById("reviewModal").style.display = "none";
+        currentReviewAppointmentId = null;
+        selectedRating = 0;
+        document.getElementById("reviewModalAlert").style.display = "none";
+      }
+
+      // Submit review
+      async function submitReview() {
+        if (!currentReviewAppointmentId) {
+          showAlert("reviewModalAlert", "Invalid appointment", "error");
+          return;
+        }
+
+        if (selectedRating === 0) {
+          showAlert("reviewModalAlert", "Please select a rating", "error");
+          return;
+        }
+
+        const comment = document.getElementById("reviewComment").value.trim();
+
+        const btn = document.getElementById("submitReviewBtn");
+        const btnText = document.getElementById("reviewSubmitText");
+        const btnLoader = document.getElementById("reviewSubmitLoader");
+
+        btn.disabled = true;
+        btnText.style.display = "none";
+        btnLoader.style.display = "inline-block";
+
+        try {
+          await axios.post("/reviews", {
+            appointmentId: currentReviewAppointmentId,
+            rating: selectedRating,
+            comment: comment,
+          });
+
+          showNotification("Review submitted successfully!", "success");
+          closeReviewModal();
+
+          // Reload data
+          await loadCompletedAppointments();
+          await loadMyReviews();
+
+          // Switch to "My Reviews" tab
+          document.querySelector('[data-tab="my-reviews"]').click();
+        } catch (error) {
+          console.error("Error submitting review:", error);
+          showAlert(
+            "reviewModalAlert",
+            error.response?.data?.message || "Failed to submit review",
+            "error"
+          );
+        } finally {
+          btn.disabled = false;
+          btnText.style.display = "inline";
+          btnLoader.style.display = "none";
+        }
+      }
+
+      // Setup review tabs
+      function setupReviewTabs() {
+        document.querySelectorAll(".review-tab-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            // Remove active class from all tabs
+            document
+              .querySelectorAll(".review-tab-btn")
+              .forEach((b) => b.classList.remove("active"));
+            document
+              .querySelectorAll(".review-tab-content")
+              .forEach((c) => c.classList.remove("active"));
+
+            // Add active class to clicked tab
+            btn.classList.add("active");
+            document.getElementById(btn.dataset.tab).classList.add("active");
+
+            // Load data based on tab
+            if (btn.dataset.tab === "write-review") {
+              loadCompletedAppointments();
+            } else if (btn.dataset.tab === "my-reviews") {
+              loadMyReviews();
+            }
+          });
+        });
+
+        // Star rating functionality
+        document.querySelectorAll("#starRating .star").forEach((star) => {
+          star.addEventListener("click", () => {
+            selectedRating = parseInt(star.dataset.rating);
+
+            // Update star display
+            document
+              .querySelectorAll("#starRating .star")
+              .forEach((s, index) => {
+                if (index < selectedRating) {
+                  s.textContent = "★";
+                  s.classList.add("active");
+                } else {
+                  s.textContent = "☆";
+                  s.classList.remove("active");
+                }
+              });
+          });
+
+          // Hover effect
+          star.addEventListener("mouseenter", () => {
+            const rating = parseInt(star.dataset.rating);
+            document
+              .querySelectorAll("#starRating .star")
+              .forEach((s, index) => {
+                if (index < rating) {
+                  s.textContent = "★";
+                } else {
+                  s.textContent = "☆";
+                }
+              });
+          });
+        });
+
+        // Reset on mouse leave
+        document
+          .getElementById("starRating")
+          .addEventListener("mouseleave", () => {
+            document
+              .querySelectorAll("#starRating .star")
+              .forEach((s, index) => {
+                if (index < selectedRating) {
+                  s.textContent = "★";
+                } else {
+                  s.textContent = "☆";
+                }
+              });
+          });
+      }
+
+      // Call setupReviewTabs in the initialization
+    </script>
+  </body>
+</html>

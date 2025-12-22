@@ -2,118 +2,67 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <title>User Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - Salon Booking System</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <nav class="navbar">
-      <div class="container">
-        <div class="logo">
-          <h2>✂️ Glamour Salon</h2>
-        </div>
-        <ul class="nav-links">
-          <li><a href="/">Home</a></li>
-          <li><a href="/services">Services</a></li>
-          <li><a href="/login">Login</a></li>
-          <li><a href="/register">Register</a></li>
-        </ul>
-      </div>
-    </nav>
 
-    <div class="auth-container">
-      <div class="auth-box">
-        <h2>Login to Your Account</h2>
-        <div class="error-message" id="errorMessage"></div>
-        <form id="loginForm">
-          <div class="form-group">
-            <label for="email">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="Enter your email"
-              required
-            />
+    <link rel="stylesheet" href="/css/auth.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+
+  <body>
+    <div class="auth-wrapper">
+      <div class="auth-card">
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-subtitle">Login to your account</p>
+
+        <div id="loginMsg" class="auth-msg"></div>
+
+        <form id="loginFormNew">
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="loginEmail" required />
           </div>
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="Enter your password"
-              required
-            />
+
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="loginPassword" required />
           </div>
-          <button type="submit" class="btn btn-primary btn-block">Login</button>
+
+          <button type="submit" class="primary-btn">Login</button>
         </form>
-        <div class="auth-link">
-          <p>Don't have an account? <a href="/register">Register here</a></p>
-        </div>
+
+        <p class="switch-text">
+          Don’t have an account?
+          <a href="/signup.html">Create one</a>
+        </p>
       </div>
     </div>
 
-    <footer>
-      <div class="container">
-        <p>&copy; 2024 Glamour Salon. All rights reserved.</p>
-      </div>
-    </footer>
-
     <script>
-      // Redirect if already logged in
-      const token = localStorage.getItem("token");
-      if (token) {
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        if (user.role === "admin") {
-          window.location.href = "/admin";
-        } else {
-          window.location.href = "/dashboard";
-        }
-      }
+      const API = "http://localhost:3003";
 
       document
-        .getElementById("loginForm")
+        .getElementById("loginFormNew")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
 
-          const errorMessage = document.getElementById("errorMessage");
-          errorMessage.textContent = "";
-
-          const formData = {
-            email: document.getElementById("email").value,
-            password: document.getElementById("password").value,
-          };
+          const email = loginEmail.value;
+          const password = loginPassword.value;
 
           try {
-            const response = await fetch("/api/auth/login", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(formData),
+            const res = await axios.post(`${API}/auth/login`, {
+              email,
+              password,
             });
 
-            const data = await response.json();
+            localStorage.setItem("token", res.data.token);
+            localStorage.setItem("user", JSON.stringify(res.data.user));
 
-            if (response.ok) {
-              localStorage.setItem("token", data.token);
-              localStorage.setItem("user", JSON.stringify(data.user));
-
-              // Redirect based on role
-              if (data.user.role === "admin") {
-                window.location.href = "/admin";
-              } else {
-                window.location.href = "/dashboard";
-              }
-            } else {
-              errorMessage.textContent =
-                data.message || "Login failed. Please try again.";
-            }
-          } catch (error) {
-            errorMessage.textContent =
-              "An error occurred. Please try again later.";
-            console.error("Login error:", error);
+            window.location.href = "/index.html";
+          } catch (err) {
+            loginMsg.textContent =
+              err.response?.data?.message || "Invalid credentials";
+            loginMsg.className = "auth-msg error";
           }
         });
     </script>

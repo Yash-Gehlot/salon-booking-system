@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Create Account</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="/css/auth.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+
+  <body>
+    <div class="auth-wrapper">
+      <div class="auth-card">
+        <h1 class="auth-title">Create Account</h1>
+        <p class="auth-subtitle">Join LuxeGlow Salon</p>
+
+        <div id="signupMsg" class="auth-msg"></div>
+
+        <form id="signupFormNew">
+          <div class="row">
+            <div class="field">
+              <label>Full Name</label>
+              <input type="text" id="firstNameNew" required />
+            </div>
+
+            <div class="field">
+              <label>Last Name</label>
+              <input type="text" id="lastNameNew" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="emailNew" required />
+          </div>
+
+          <div class="field">
+            <label>Phone</label>
+            <input type="tel" id="phoneNew" required />
+          </div>
+
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="passwordNew" required />
+          </div>
+
+          <div class="field">
+            <label>Confirm Password</label>
+            <input type="password" id="confirmPasswordNew" required />
+          </div>
+
+          <button type="submit" class="primary-btn">Sign Up</button>
+        </form>
+
+        <p class="switch-text">
+          Already registered?
+          <a href="/login.html">Login</a>
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const API = "http://localhost:3003";
+
+      document
+        .getElementById("signupFormNew")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          if (passwordNew.value !== confirmPasswordNew.value) {
+            signupMsg.textContent = "Passwords do not match";
+            signupMsg.className = "auth-msg error";
+            return;
+          }
+
+          try {
+            await axios.post(`${API}/auth/signup`, {
+              name: firstNameNew.value,
+              lastName: lastNameNew.value,
+              email: emailNew.value,
+              phone: phoneNew.value,
+              password: passwordNew.value,
+            });
+
+            signupMsg.textContent = "Account created successfully";
+            signupMsg.className = "auth-msg success";
+
+            setTimeout(() => {
+              window.location.href = "/login.html";
+            }, 1000);
+          } catch (err) {
+            signupMsg.textContent =
+              err.response?.data?.message || "Signup failed";
+            signupMsg.className = "auth-msg error";
+          }
+        });
+    </script>
+  </body>
+</html>

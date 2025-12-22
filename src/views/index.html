@@ -3,113 +3,648 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Salon Booking System - Home</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>LuxeGlow Salon - Premium Beauty & Wellness</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
+    <!-- Navigation Bar -->
     <nav class="navbar">
       <div class="container">
-        <div class="logo">
-          <h2>✂️ Glamour Salon</h2>
+        <div class="nav-wrapper">
+          <div class="logo">
+            <img
+              src="/images/logo.png"
+              alt="LuxeGlow Logo"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+            />
+            <div class="logo-text" style="display: none">
+              <span class="logo-main">LuxeGlow</span>
+              <span class="logo-sub">Salon & Spa</span>
+            </div>
+          </div>
+          <ul class="nav-menu" id="navMenu">
+            <li><a href="#home" class="nav-link active">Home</a></li>
+            <li><a href="#services" class="nav-link">Services</a></li>
+            <li><a href="#gallery" class="nav-link">Gallery</a></li>
+            <li><a href="#reviews" class="nav-link">Reviews</a></li>
+            <li><a href="#about" class="nav-link">About</a></li>
+            <li><a href="#contact" class="nav-link">Contact</a></li>
+
+            <!-- Login Dropdown (shown when not logged in) -->
+            <li class="login-dropdown" id="loginDropdown">
+              <button id="loginBtn" class="btn btn-outline">Login ▾</button>
+              <ul class="dropdown-menu" id="loginMenu">
+                <li><a href="/login.html">User</a></li>
+                <li><a href="admin/admin-login.html">Admin</a></li>
+              </ul>
+            </li>
+
+            <!-- User Profile (shown when logged in) -->
+            <li
+              class="user-profile-dropdown"
+              id="userProfileDropdown"
+              style="display: none"
+            >
+              <button id="profileBtn" class="btn btn-outline">
+                <span id="userInitial">U</span>
+                <span id="userName">User</span> ▾
+              </button>
+              <ul class="dropdown-menu" id="profileMenu">
+                <li><a href="/user-dashboard.html">Dashboard</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+              </ul>
+            </li>
+          </ul>
+          <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
-        <ul class="nav-links">
-          <li><a href="/">Home</a></li>
-          <li><a href="/services">Services</a></li>
-          <li><a href="/login">Login</a></li>
-          <li><a href="/register">Register</a></li>
-        </ul>
       </div>
     </nav>
 
-    <section class="hero">
-      <div class="container">
-        <div class="hero-content">
-          <h1>Welcome to Glamour Salon</h1>
-          <p>
-            Experience luxury and style with our professional salon services
-          </p>
-          <div class="cta-buttons">
-            <a href="/booking" class="btn btn-primary">Book Appointment</a>
-            <a href="/services" class="btn btn-secondary">View Services</a>
-          </div>
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <h1 class="hero-title">Experience Luxury & Elegance</h1>
+        <p class="hero-subtitle">Where Beauty Meets Perfection</p>
+        <div class="hero-buttons">
+          <a href="#" class="btn btn-primary btn-lg book-btn"
+            >Book Appointment</a
+          >
+          <a href="#services" class="btn btn-secondary btn-lg"
+            >Explore Services</a
+          >
         </div>
+      </div>
+      <div class="scroll-indicator">
+        <span>Scroll Down</span>
+        <div class="scroll-arrow"></div>
       </div>
     </section>
 
+    <!-- Features Section -->
     <section class="features">
       <div class="container">
-        <h2>Why Choose Us</h2>
         <div class="features-grid">
           <div class="feature-card">
-            <div class="icon">👥</div>
-            <h3>Expert Stylists</h3>
-            <p>
-              Our team of professional stylists are trained in the latest
-              techniques
-            </p>
+            <div class="feature-icon">👑</div>
+            <h3>Premium Services</h3>
+            <p>Top-tier beauty treatments from certified professionals</p>
           </div>
           <div class="feature-card">
-            <div class="icon">📅</div>
+            <div class="feature-icon">⏰</div>
             <h3>Easy Booking</h3>
-            <p>Book your appointments online anytime, anywhere</p>
+            <p>Schedule appointments online in just a few clicks</p>
           </div>
           <div class="feature-card">
-            <div class="icon">💳</div>
-            <h3>Secure Payment</h3>
-            <p>Multiple payment options with secure transaction processing</p>
+            <div class="feature-icon">✨</div>
+            <h3>Expert Staff</h3>
+            <p>Highly trained stylists and beauty experts</p>
           </div>
           <div class="feature-card">
-            <div class="icon">⭐</div>
-            <h3>Quality Service</h3>
-            <p>Premium products and exceptional customer service</p>
+            <div class="feature-icon">💎</div>
+            <h3>Luxury Products</h3>
+            <p>Premium quality products for the best results</p>
           </div>
         </div>
       </div>
     </section>
 
-    <footer>
+    <!-- Services Section -->
+    <section id="services" class="services">
       <div class="container">
-        <p>&copy; 2024 Glamour Salon. All rights reserved.</p>
+        <div class="section-header">
+          <h2 class="section-title">Our Services</h2>
+          <p class="section-subtitle">
+            Indulge in our comprehensive range of beauty services
+          </p>
+        </div>
+        <div class="services-grid" id="servicesGrid">
+          <!-- Services will be loaded here dynamically -->
+        </div>
+      </div>
+    </section>
+    <!-- Gallery Section -->
+    <section id="gallery" class="gallery">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Our Gallery</h2>
+          <p class="section-subtitle">A glimpse of our work and ambiance</p>
+        </div>
+
+        <div class="gallery-grid">
+          <div class="gallery-item">
+            <img src="/images/hairWash-1.jpg" alt="Gallery 2" />
+          </div>
+
+          <div class="gallery-item">
+            <img src="/images/Interier-2.jpg" alt="Gallery 4" />
+          </div>
+
+          <div class="gallery-item">
+            <img src="/images/hairWash-2.jpg" alt="Gallery 6" />
+          </div>
+
+          <div class="gallery-item">
+            <img src="/images/Interier-1.jpg" alt="Gallery 3" />
+          </div>
+
+          <div class="gallery-item">
+            <img src="/images/dryer.jpg" alt="Gallery 5" />
+          </div>
+
+          <div class="gallery-item">
+            <img src="/images/Interier-5.jpg" alt="Gallery 1" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reviews/Testimonials Section -->
+    <section id="reviews" class="reviews-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Client Reviews</h2>
+          <p class="section-subtitle">What our happy clients say about us</p>
+        </div>
+
+        <div class="reviews-container" id="reviewsContainer">
+          <p class="info-text">Loading reviews...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+      <div class="container">
+        <div class="about-wrapper">
+          <div class="about-image">
+            <img src="/images/Model.jpg" alt="Salon Interior" />
+          </div>
+          <div class="about-content">
+            <h2>About LuxeGlow</h2>
+            <p class="lead">
+              Your destination for premium beauty and wellness services
+            </p>
+            <p>
+              At LuxeGlow, we believe that beauty is an art form. With over 15
+              years of experience, our team of certified professionals is
+              dedicated to providing exceptional service in a luxurious and
+              relaxing environment.
+            </p>
+            <p>
+              We use only the finest products and latest techniques to ensure
+              you leave feeling refreshed, confident, and beautiful.
+            </p>
+            <div class="stats">
+              <div class="stat">
+                <span class="stat-number">15+</span>
+                <span class="stat-label">Years Experience</span>
+              </div>
+              <div class="stat">
+                <span class="stat-number">50K+</span>
+                <span class="stat-label">Happy Clients</span>
+              </div>
+              <div class="stat">
+                <span class="stat-number">25+</span>
+                <span class="stat-label">Expert Staff</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Get In Touch</h2>
+          <p class="section-subtitle">We'd love to hear from you</p>
+        </div>
+        <div class="contact-wrapper">
+          <div class="contact-info">
+            <div class="contact-item">
+              <div class="contact-icon">📍</div>
+              <div>
+                <h4>Location</h4>
+                <p>
+                  123 Beauty Street, Fashion District<br />New York, NY 10001
+                </p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">📞</div>
+              <div>
+                <h4>Phone</h4>
+                <p>+1 (555) 123-4567</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">✉️</div>
+              <div>
+                <h4>Email</h4>
+                <p>info@luxeglow.com</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">🕐</div>
+              <div>
+                <h4>Hours</h4>
+                <p>
+                  Mon-Fri: 9:00 AM - 8:00 PM<br />Sat-Sun: 10:00 AM - 6:00 PM
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="contact-form">
+            <form id="contactForm">
+              <input type="text" placeholder="Your Name" required />
+              <input type="email" placeholder="Your Email" required />
+              <input type="tel" placeholder="Your Phone" />
+              <textarea placeholder="Your Message" rows="5" required></textarea>
+              <button type="submit" class="btn btn-primary btn-block">
+                Send Message
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h4>About LuxeGlow</h4>
+            <p>
+              Your premier destination for luxury beauty and wellness services.
+            </p>
+            <div class="social-links">
+              <a href="#" aria-label="Facebook">📘</a>
+              <a href="#" aria-label="Instagram">📷</a>
+              <a href="#" aria-label="Twitter">🐦</a>
+              <a href="#" aria-label="LinkedIn">💼</a>
+            </div>
+          </div>
+          <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="#services">Services</a></li>
+              <li><a href="#about">About Us</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>Services</h4>
+            <ul>
+              <li><a href="#services">Hair Services</a></li>
+              <li><a href="#services">Facial Treatments</a></li>
+              <li><a href="#services">Nail Services</a></li>
+              <li><a href="#services">Spa & Massage</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>Newsletter</h4>
+            <p>Subscribe for exclusive offers and updates</p>
+            <form class="newsletter-form">
+              <input type="email" placeholder="Your email" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>
+            &copy; 2024 LuxeGlow Salon. All rights reserved. |
+            <a href="/privacy.html">Privacy Policy</a> |
+            <a href="/terms.html">Terms of Service</a>
+          </p>
+        </div>
       </div>
     </footer>
 
     <script>
+      const API_URL = "http://localhost:3003";
+
+      // Check authentication on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        checkAuth();
+        initializeNavigation();
+        loadServices();
+        loadReviews();
+      });
+
       // Check if user is logged in
-      const token = localStorage.getItem("token");
-      if (token) {
-        // Update nav for logged in users
-        const navLinks = document.querySelector(".nav-links");
-        navLinks.innerHTML = `
-                <li><a href="/">Home</a></li>
-                <li><a href="/services">Services</a></li>
-                <li><a href="/dashboard">Dashboard</a></li>
-                <li><a href="/appointments">My Appointments</a></li>
-                <li><a href="#" id="logoutBtn">Logout</a></li>
-            `;
+      function checkAuth() {
+        const token = localStorage.getItem("token");
+        const user = localStorage.getItem("user");
 
-        // Add logout functionality
-        document
-          .getElementById("logoutBtn")
-          .addEventListener("click", async (e) => {
-            e.preventDefault();
-            try {
-              const response = await fetch("/api/auth/logout", {
-                method: "POST",
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
+        if (token && user) {
+          // User is logged in
+          const userData = JSON.parse(user);
+          showUserProfile(userData);
+        } else {
+          // User is not logged in
+          showLoginButton();
+        }
+      }
 
-              if (response.ok) {
-                localStorage.removeItem("token");
-                localStorage.removeItem("user");
-                window.location.href = "/";
+      // Show user profile button
+      function showUserProfile(user) {
+        document.getElementById("loginDropdown").style.display = "none";
+        document.getElementById("userProfileDropdown").style.display = "block";
+
+        const userName = document.getElementById("userName");
+        const userInitial = document.getElementById("userInitial");
+
+        const fullName = `${user.firstName || ""} ${
+          user.lastName || ""
+        }`.trim();
+        userName.textContent = fullName || user.email;
+        userInitial.textContent = (
+          user.firstName?.[0] || user.email[0]
+        ).toUpperCase();
+      }
+
+      // Show login button
+      function showLoginButton() {
+        document.getElementById("loginDropdown").style.display = "block";
+        document.getElementById("userProfileDropdown").style.display = "none";
+      }
+
+      // Initialize navigation
+      function initializeNavigation() {
+        const hamburger = document.getElementById("hamburger");
+        const navMenu = document.getElementById("navMenu");
+        const navLinks = document.querySelectorAll(".nav-link");
+
+        // Hamburger menu toggle
+        if (hamburger) {
+          hamburger.addEventListener("click", function () {
+            navMenu.classList.toggle("active");
+            hamburger.classList.toggle("active");
+          });
+        }
+
+        // Close menu when clicking nav links
+        navLinks.forEach((link) => {
+          link.addEventListener("click", function () {
+            navMenu.classList.remove("active");
+            hamburger.classList.remove("active");
+          });
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+          anchor.addEventListener("click", function (e) {
+            const href = this.getAttribute("href");
+            if (href !== "#" && href.length > 1) {
+              e.preventDefault();
+              const target = document.querySelector(href);
+              if (target) {
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
               }
-            } catch (error) {
-              console.error("Logout error:", error);
             }
           });
+        });
+
+        // Login dropdown
+        const loginBtn = document.getElementById("loginBtn");
+        const loginMenu = document.getElementById("loginMenu");
+        if (loginBtn) {
+          loginBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            loginMenu.style.display =
+              loginMenu.style.display === "block" ? "none" : "block";
+          });
+        }
+
+        // Profile dropdown
+        const profileBtn = document.getElementById("profileBtn");
+        const profileMenu = document.getElementById("profileMenu");
+        if (profileBtn) {
+          profileBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            profileMenu.style.display =
+              profileMenu.style.display === "block" ? "none" : "block";
+          });
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener("click", (e) => {
+          if (loginMenu) loginMenu.style.display = "none";
+          if (profileMenu) profileMenu.style.display = "none";
+        });
+
+        // Logout button
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            logout();
+          });
+        }
+
+        // Book now buttons
+        const bookBtns = document.querySelectorAll(".book-btn, #bookNowBtn");
+        bookBtns.forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            handleBooking();
+          });
+        });
+
+        // Active nav on scroll
+        window.addEventListener("scroll", function () {
+          let current = "";
+          const sections = document.querySelectorAll("section[id]");
+
+          sections.forEach((section) => {
+            const sectionTop = section.offsetTop;
+            if (pageYOffset >= sectionTop - 200) {
+              current = section.getAttribute("id");
+            }
+          });
+
+          navLinks.forEach((link) => {
+            link.classList.remove("active");
+            if (link.getAttribute("href") === "#" + current) {
+              link.classList.add("active");
+            }
+          });
+        });
       }
+
+      function handleBooking() {
+        const token = localStorage.getItem("token");
+        if (token) {
+          // Redirect with #book-appointment hash
+          window.location.href = "/user-dashboard.html#book-appointment";
+        } else {
+          showNotification("Please login to book an appointment", "info");
+          setTimeout(() => {
+            window.location.href = "/login.html";
+          }, 1500);
+        }
+      }
+
+      // Load services
+      async function loadServices() {
+        try {
+          const response = await fetch(`${API_URL}/admin/allServices`);
+          if (response.ok) {
+            const data = await response.json();
+            displayServices(data.data || data);
+          } else {
+          }
+        } catch (error) {
+          console.error("Error loading services:", error);
+        }
+      }
+
+      function displayServices(services) {
+        const servicesGrid = document.getElementById("servicesGrid");
+        if (!servicesGrid) return;
+
+        servicesGrid.innerHTML = services
+          .map(
+            (service) => `
+          <div class="service-card">
+            <div class="service-image">
+              <img src="${service.imageUrl || "/images/hairCrul.jpg"}" alt="${
+              service.name
+            }"
+                   onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22300%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23999%22%3E${
+                     service.name
+                   }%3C/text%3E%3C/svg%3E'">
+              <div class="service-overlay">
+                <a href="#" class="btn btn-primary book-btn">Book Now</a>
+              </div>
+            </div>
+            <div class="service-content">
+              <h3>${service.name}</h3>
+              <p>${service.description}</p>
+              <div class="service-footer">
+                <span class="service-price">$${service.price}</span>
+                <span class="service-duration">⏱ ${service.duration} min</span>
+              </div>
+            </div>
+          </div>
+        `
+          )
+          .join("");
+
+        // Re-attach booking handlers
+        document.querySelectorAll(".book-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            handleBooking();
+          });
+        });
+      }
+
+      // Logout
+      function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        showNotification("Logged out successfully", "success");
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1000);
+      }
+
+      // Show notification
+      function showNotification(message, type = "info") {
+        const notification = document.createElement("div");
+        notification.style.cssText = `
+          position: fixed; top: 20px; right: 20px; padding: 15px 25px;
+          background: ${
+            type === "success"
+              ? "#00cc66"
+              : type === "error"
+              ? "#ff4444"
+              : "#3498db"
+          };
+          color: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+          z-index: 10000; animation: slideIn 0.3s ease;
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+          notification.style.animation = "slideOut 0.3s ease";
+          setTimeout(() => notification.remove(), 300);
+        }, 3000);
+      }
+
+      // Load reviews
+      async function loadReviews() {
+        try {
+          // Only show 4-5 star reviews
+          const response = await fetch(`${API_URL}/reviews?minRating=4`);
+          if (response.ok) {
+            const data = await response.json();
+            displayReviews(data.data || data);
+          } else {
+            displayReviews([]);
+          }
+        } catch (error) {
+          console.error("Error loading reviews:", error);
+          displayReviews([]);
+        }
+      }
+
+      function displayReviews(reviews) {
+        const container = document.getElementById("reviewsContainer");
+        if (!container) return;
+
+        if (reviews.length === 0) {
+          container.innerHTML =
+            '<p class="info-text">No reviews yet. Be the first to leave a review!</p>';
+          return;
+        }
+
+        // Show maximum 6 reviews on homepage
+        const displayReviews = reviews.slice(0, 6);
+
+        container.innerHTML = displayReviews
+          .map((review) => {
+            const firstName =
+              review.customer?.name?.split(" ")[0] || "Anonymous";
+            const stars =
+              "★".repeat(review.rating) + "☆".repeat(5 - review.rating);
+
+            return `
+  <div class="review-card-public">
+    <div class="review-stars-public">${stars}</div>
+    <p class="review-comment-public">${review.comment || "Great service!"}</p>
+    <div class="review-author">
+      <strong>${firstName}</strong>
+      <p>${review.appointment?.service?.name || "Service"} • ${
+              review.staff?.name || "Staff"
+            }</p>
+    </div>
+  </div>
+`;
+          })
+          .join("");
+      }
+      // Add animation styles
+      const style = document.createElement("style");
+      style.textContent = `
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(400px); opacity: 0; } }
+        .service-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        .service-duration { color: #666; font-size: 0.9rem; }
+      `;
+      document.head.appendChild(style);
     </script>
   </body>
 </html>
