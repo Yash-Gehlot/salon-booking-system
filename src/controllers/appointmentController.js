@@ -2,36 +2,37 @@ import models from "../models/index.js";
 import { Op } from "sequelize";
 import {
   sendAppointmentConfirmation,
-  sendAppointmentReminder,
+  sendAppointmentCancellation,
 } from "../services/emailService.js";
 
 const { Appointment, User, Staff, Service } = models;
 
 export const getAllAppointments = async (req, res, next) => {
   try {
-    const whereClause =
-      req.user.role === "customer" ? { customerId: req.user.id } : {};
-
     const appointments = await Appointment.findAll({
-      where: whereClause,
+      where: {
+        customerId: req.user.id,
+      },
       include: [
-        { model: User, as: "customer", attributes: ["name", "email", "phone"] },
+        {
+          model: User,
+          as: "customer",
+          where: { id: req.user.id },
+          required: true,
+          attributes: ["id", "name", "email", "phone"],
+        },
         {
           model: Staff,
           as: "staff",
-          include: [{ model: User, as: "user", attributes: ["name"] }],
+          attributes: ["id", "name", "email", "phone", "specialization"],
         },
         { model: Service, as: "service" },
       ],
-      order: [
-        ["appointmentDate", "DESC"],
-        ["appointmentTime", "DESC"],
-      ],
+      order: [["appointmentDate", "DESC"]],
     });
 
     res.status(200).json({
       success: true,
-      count: appointments.length,
       data: appointments,
     });
   } catch (error) {
@@ -47,7 +48,7 @@ export const getAppointment = async (req, res, next) => {
         {
           model: Staff,
           as: "staff",
-          include: [{ model: User, as: "user", attributes: ["name"] }],
+          attributes: ["id", "name", "email", "phone", "specialization"],
         },
         { model: Service, as: "service" },
       ],
@@ -57,16 +58,6 @@ export const getAppointment = async (req, res, next) => {
       return res.status(404).json({
         success: false,
         message: "Appointment not found",
-      });
-    }
-
-    if (
-      req.user.role === "customer" &&
-      appointment.customerId !== req.user.id
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to access this appointment",
       });
     }
 
@@ -90,7 +81,6 @@ export const getAvailableSlots = async (req, res, next) => {
       });
     }
 
-    // Get all booked appointments for the staff on that date
     const bookedAppointments = await Appointment.findAll({
       where: {
         staffId,
@@ -102,13 +92,11 @@ export const getAvailableSlots = async (req, res, next) => {
 
     const bookedTimes = bookedAppointments.map((apt) => apt.appointmentTime);
 
-    // Generate all possible time slots (e.g., 9 AM to 6 PM)
     const allSlots = [];
     for (let hour = 9; hour <= 18; hour++) {
       allSlots.push(`${hour.toString().padStart(2, "0")}:00`);
     }
 
-    // Filter out booked slots
     const availableSlots = allSlots.filter(
       (slot) => !bookedTimes.includes(slot)
     );
@@ -159,7 +147,7 @@ export const createAppointment = async (req, res, next) => {
         {
           model: Staff,
           as: "staff",
-          include: [{ model: User, as: "user" }],
+          attributes: ["id", "name", "email", "phone", "specialization"],
         },
         { model: Service, as: "service" },
       ],
@@ -169,8 +157,10 @@ export const createAppointment = async (req, res, next) => {
     try {
       await sendAppointmentConfirmation(appointmentData);
     } catch (emailError) {
-      console.error("Failed to send confirmation email:", emailError);
-      // Don't fail the request if email fails
+      console.error(
+        "⚠️ Failed to send confirmation email:",
+        emailError.message
+      );
     }
 
     res.status(201).json({
@@ -193,7 +183,24 @@ export const updateAppointment = async (req, res, next) => {
       });
     }
 
-    const { appointmentDate, appointmentTime, status, notes } = req.body;
+    if (appointment.customerId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this appointment",
+      });
+    }
+
+    if (
+      appointment.status === "completed" ||
+      appointment.status === "cancelled"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot reschedule completed or cancelled appointments",
+      });
+    }
+
+    const { appointmentDate, appointmentTime } = req.body;
 
     if (appointmentDate || appointmentTime) {
       const conflict = await Appointment.findOne({
@@ -218,14 +225,25 @@ export const updateAppointment = async (req, res, next) => {
       appointmentDate || appointment.appointmentDate;
     appointment.appointmentTime =
       appointmentTime || appointment.appointmentTime;
-    appointment.status = status || appointment.status;
-    appointment.notes = notes || appointment.notes;
 
     await appointment.save();
 
+    const updatedAppointment = await Appointment.findByPk(appointment.id, {
+      include: [
+        { model: User, as: "customer", attributes: ["name", "email", "phone"] },
+        {
+          model: Staff,
+          as: "staff",
+          attributes: ["id", "name", "email", "phone", "specialization"],
+        },
+        { model: Service, as: "service" },
+      ],
+    });
+
     res.status(200).json({
       success: true,
-      data: appointment,
+      data: updatedAppointment,
+      message: "Appointment rescheduled successfully",
     });
   } catch (error) {
     next(error);
@@ -234,7 +252,17 @@ export const updateAppointment = async (req, res, next) => {
 
 export const deleteAppointment = async (req, res, next) => {
   try {
-    const appointment = await Appointment.findByPk(req.params.id);
+    const appointment = await Appointment.findByPk(req.params.id, {
+      include: [
+        { model: User, as: "customer", attributes: ["name", "email", "phone"] },
+        {
+          model: Staff,
+          as: "staff",
+          attributes: ["id", "name", "email", "phone", "specialization"],
+        },
+        { model: Service, as: "service" },
+      ],
+    });
 
     if (!appointment) {
       return res.status(404).json({
@@ -243,19 +271,20 @@ export const deleteAppointment = async (req, res, next) => {
       });
     }
 
-    // Check authorization
-    if (
-      req.user.role === "customer" &&
-      appointment.customerId !== req.user.id
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to cancel this appointment",
-      });
-    }
-
     appointment.status = "cancelled";
     await appointment.save();
+
+    // Send cancellation email
+    try {
+      await sendAppointmentCancellation(appointment);
+      console.log("✅ Cancellation email sent");
+    } catch (emailError) {
+      console.error(
+        "⚠️ Failed to send cancellation email:",
+        emailError.message
+      );
+      // Don't fail the request if email fails
+    }
 
     res.status(200).json({
       success: true,
