@@ -8,23 +8,25 @@ import {
   createService,
   updateService,
   deleteService,
+  adminLogin,
+  updateAppointmentStatus,
 } from "../controllers/adminController.js";
 
-import { protect, authorize } from "../middlewares/authMiddleware.js";
+import { protectAdmin } from "../middlewares/adminAuthMiddleware.js";
 
 const router = express.Router();
 
-// router.use(protect);
-// router.use(authorize("admin"));
+router.post("/login", adminLogin);
+router.get("/users", protectAdmin, getAllUsers); //✅
+router.get("/appointments", protectAdmin, getAllAppointments); //✅
+router.put("/appointments/:id", protectAdmin, updateAppointmentStatus);
 
-router.get("/users", getAllUsers); //✅
-router.get("/appointments", getAllAppointments); //✅
-router.get("/statistics", getStatistics); //✅
+router.get("/statistics", protectAdmin, getStatistics); //✅
 
 router.get("/allServices", getAllServices); //✅
-router.get("/service/:id", getService); //✅
-router.post("/createService", createService); //✅
-router.put("/service/:id", updateService); //✅
-router.delete("/service/:id", deleteService); //✅
+router.get("/service/:id", protectAdmin, getService); //✅
+router.post("/createService", protectAdmin, createService); //✅
+router.put("/service/:id", protectAdmin, updateService); //✅
+router.delete("/service/:id", protectAdmin, deleteService); //✅
 
 export default router;

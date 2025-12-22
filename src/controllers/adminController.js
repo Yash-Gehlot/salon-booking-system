@@ -1,7 +1,33 @@
 import models from "../models/index.js";
-import { Op, fn, col } from "sequelize";
+import jwt from "jsonwebtoken";
 
-const { User, Appointment, Service, Staff, Payment, Review } = models;
+const { User, Appointment, Service, Staff, Payment } = models;
+
+export const adminLogin = async (req, res, next) => {
+  try {
+    const { secretKey } = req.body;
+
+    if (secretKey !== process.env.ADMIN_SECRET_KEY) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid secret key",
+      });
+    }
+
+    const token = jwt.sign(
+      { role: "admin", isAdmin: true },
+      process.env.JWT_SECRET
+    );
+
+    res.status(200).json({
+      success: true,
+      token,
+      message: "Admin login successful",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getAllUsers = async (req, res, next) => {
   try {
@@ -20,7 +46,7 @@ export const getAllAppointments = async (req, res, next) => {
     const appointments = await Appointment.findAll({
       include: [
         { model: User, as: "customer" },
-        { model: Staff, as: "staff", include: [{ model: User, as: "user" }] },
+        { model: Staff, as: "staff" },
         { model: Service, as: "service" },
         { model: Payment, as: "payment" },
       ],
@@ -34,23 +60,41 @@ export const getAllAppointments = async (req, res, next) => {
 
 export const getStatistics = async (req, res, next) => {
   try {
-    const stats = {
-      users: await User.count({ where: { role: "customer" } }),
-      staff: await Staff.count({ where: { isActive: true } }),
-      services: await Service.count({ where: { isActive: true } }),
-      revenue:
-        (await Payment.sum("amount", { where: { status: "completed" } })) || 0,
-    };
+    const stats = {};
 
-    const avgRating = await Review.findOne({
-      attributes: [[fn("AVG", col("rating")), "avgRating"]],
-    });
+    try {
+      stats.users = await User.count();
+    } catch (e) {
+      console.error("Error counting users:", e.message);
+      stats.users = 0;
+    }
+
+    try {
+      stats.staff = await Staff.count({ where: { isActive: true } });
+    } catch (e) {
+      console.error("Error counting staff:", e.message);
+      stats.staff = 0;
+    }
+
+    try {
+      stats.services = await Service.count({ where: { isActive: true } });
+    } catch (e) {
+      console.error("Error counting services:", e.message);
+      stats.services = 0;
+    }
+
+    try {
+      stats.revenue =
+        (await Payment.sum("amount", { where: { status: "completed" } })) || 0;
+    } catch (e) {
+      console.error("Error calculating revenue:", e.message);
+      stats.revenue = 0;
+    }
 
     res.status(200).json({
       success: true,
       data: {
         ...stats,
-        averageRating: avgRating?.dataValues?.avgRating || 0,
       },
     });
   } catch (error) {
@@ -78,7 +122,6 @@ export const getAllServices = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
-    hy;
   }
 };
 
@@ -179,6 +222,48 @@ export const deleteService = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Service deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateAppointmentStatus = async (req, res, next) => {
+  try {
+    const appointment = await Appointment.findByPk(req.params.id);
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
+      });
+    }
+
+    const { appointmentDate, appointmentTime, status, notes } = req.body;
+
+    if (appointmentDate) appointment.appointmentDate = appointmentDate;
+    if (appointmentTime) appointment.appointmentTime = appointmentTime;
+    if (status) appointment.status = status;
+    if (notes !== undefined) appointment.notes = notes;
+
+    await appointment.save();
+
+    const updatedAppointment = await Appointment.findByPk(appointment.id, {
+      include: [
+        { model: User, as: "customer", attributes: ["name", "email", "phone"] },
+        {
+          model: Staff,
+          as: "staff",
+          attributes: ["id", "name", "email", "phone", "specialization"],
+        },
+        { model: Service, as: "service" },
+      ],
+    });
+
+    res.status(200).json({
+      success: true,
+      data: updatedAppointment,
+      message: "Appointment updated successfully",
     });
   } catch (error) {
     next(error);
