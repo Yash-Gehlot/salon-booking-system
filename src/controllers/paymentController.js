@@ -1,76 +1,130 @@
 import models from "../models/index.js";
-import { createRazorpayPayment } from "../services/paymentService.js";
+import {
+  createRazorpayOrder,
+  verifyRazorpaySignature,
+} from "../services/paymentService.js";
+import {
+  sendAppointmentConfirmation,
+  sendPaymentReceipt,
+} from "../services/emailService.js";
 
-const { Payment, Appointment, Service } = models;
+const { Payment, Appointment, Service, User, Staff } = models;
 
-export const createPayment = async (req, res, next) => {
+export const createPaymentOrder = async (req, res, next) => {
   try {
-    const { appointmentId, paymentMethod } = req.body;
+    const { serviceId, staffId, appointmentDate, appointmentTime, notes } =
+      req.body;
 
-    const appointment = await Appointment.findByPk(appointmentId, {
-      include: [{ model: Service, as: "service" }],
-    });
-
-    if (!appointment) {
+    const service = await Service.findByPk(serviceId);
+    if (!service) {
       return res.status(404).json({
         success: false,
-        message: "Appointment not found",
+        message: "Service not found",
       });
     }
 
-    const amount = appointment.service.price;
+    const amount = parseFloat(service.price);
+    const receipt = `receipt_${Date.now()}`;
 
-    let paymentIntent;
-    if (paymentMethod === "stripe") {
-      paymentIntent = await createRazorpayPayment.createStripePayment(amount);
-    } else if (paymentMethod === "razorpay") {
-      paymentIntent = await createRazorpayPayment.createRazorpayPayment(amount);
-    }
+    const razorpayOrder = await createRazorpayOrder(amount, receipt);
 
-    const payment = await Payment.create({
-      appointmentId,
-      amount,
-      paymentMethod,
-      status: "pending",
-    });
-
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: {
-        payment,
-        clientSecret: paymentIntent.clientSecret || paymentIntent.id,
+        orderId: razorpayOrder.id,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        keyId: process.env.RAZORPAY_KEY_ID,
+
+        appointmentData: {
+          serviceId,
+          staffId,
+          appointmentDate,
+          appointmentTime,
+          notes,
+        },
       },
     });
   } catch (error) {
+    console.error("Payment order creation error:", error);
     next(error);
   }
 };
 
-export const verifyPayment = async (req, res, next) => {
+export const verifyPaymentAndCreateAppointment = async (req, res, next) => {
   try {
-    const { paymentId, transactionId } = req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      appointmentData,
+    } = req.body;
 
-    const payment = await Payment.findByPk(paymentId);
-    if (!payment) {
-      return res.status(404).json({
+    const isValid = verifyRazorpaySignature(
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature
+    );
+
+    if (!isValid) {
+      return res.status(400).json({
         success: false,
-        message: "Payment not found",
+        message: "Payment verification failed. Invalid signature.",
       });
     }
 
-    payment.transactionId = transactionId;
-    payment.status = "completed";
-    await payment.save();
+    const service = await Service.findByPk(appointmentData.serviceId);
 
-    const appointment = await Appointment.findByPk(payment.appointmentId);
-    appointment.status = "confirmed";
-    await appointment.save();
+    const appointment = await Appointment.create({
+      customerId: req.user.id,
+      staffId: appointmentData.staffId,
+      serviceId: appointmentData.serviceId,
+      appointmentDate: appointmentData.appointmentDate,
+      appointmentTime: appointmentData.appointmentTime,
+      notes: appointmentData.notes,
+      status: "confirmed", // Set to confirmed since payment is done
+    });
 
-    res.status(200).json({
+    const payment = await Payment.create({
+      appointmentId: appointment.id,
+      amount: service.price,
+      paymentMethod: "razorpay",
+      transactionId: razorpay_payment_id,
+      status: "completed",
+    });
+
+    const completeAppointment = await Appointment.findByPk(appointment.id, {
+      include: [
+        { model: User, as: "customer", attributes: ["name", "email", "phone"] },
+        {
+          model: Staff,
+          as: "staff",
+          attributes: ["id", "name", "email", "phone", "specialization"],
+        },
+        { model: Service, as: "service" },
+      ],
+    });
+
+    try {
+      await Promise.all([
+        sendAppointmentConfirmation(completeAppointment),
+        sendPaymentReceipt(completeAppointment, payment),
+      ]);
+      console.log("✅ All emails sent successfully");
+    } catch (emailError) {
+      console.error("⚠️ Failed to send email(s):", emailError.message);
+    }
+
+    res.status(201).json({
       success: true,
-      data: payment,
+      message: "Payment successful and appointment created!",
+      data: {
+        appointment: completeAppointment,
+        payment: payment,
+      },
     });
   } catch (error) {
+    console.error("Payment verification error:", error);
     next(error);
   }
 };
