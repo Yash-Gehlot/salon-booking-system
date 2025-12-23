@@ -13,8 +13,7 @@ import paymentRoutes from "./src/routes/paymentRoutes.js";
 import reviewRoutes from "./src/routes/reviewRoutes.js";
 import adminRoutes from "./src/routes/adminRoutes.js";
 
-// Get __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url); //Gets the current file's directory path (ES modules don't have __dirname by default).
+const __filename = fileURLToPath(import.meta.url); //having current file's directory path (ES modules don't have __dirname by default).
 const __dirname = path.dirname(__filename);
 
 dotenv.config({ quiet: true });
@@ -26,7 +25,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "src", "public")));
 app.use(express.static(path.join(__dirname, "src", "views")));
 
-// API Routes
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/staff", staffRoutes);
@@ -37,7 +35,6 @@ app.use("/admin", adminRoutes);
 
 app.use(errorHandler);
 
-// View Routes
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "src", "views", "index.html"));
 });
