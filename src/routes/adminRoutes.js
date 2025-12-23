@@ -17,16 +17,16 @@ import { protectAdmin } from "../middlewares/adminAuthMiddleware.js";
 const router = express.Router();
 
 router.post("/login", adminLogin);
-router.get("/users", protectAdmin, getAllUsers); //✅
-router.get("/appointments", protectAdmin, getAllAppointments); //✅
+router.get("/users", protectAdmin, getAllUsers);
+router.get("/appointments", protectAdmin, getAllAppointments);
 router.put("/appointments/:id", protectAdmin, updateAppointmentStatus);
 
-router.get("/statistics", protectAdmin, getStatistics); //✅
+router.get("/statistics", protectAdmin, getStatistics);
 
-router.get("/allServices", getAllServices); //✅
-router.get("/service/:id", protectAdmin, getService); //✅
-router.post("/createService", protectAdmin, createService); //✅
-router.put("/service/:id", protectAdmin, updateService); //✅
-router.delete("/service/:id", protectAdmin, deleteService); //✅
+router.get("/allServices", getAllServices);
+router.get("/service/:id", protectAdmin, getService);
+router.post("/createService", protectAdmin, createService);
+router.put("/service/:id", protectAdmin, updateService);
+router.delete("/service/:id", protectAdmin, deleteService);
 
 export default router;

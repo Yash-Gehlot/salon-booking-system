@@ -1,17 +1,15 @@
 import nodemailer from "nodemailer";
 
-// Create transporter using Sendinblue SMTP with correct login
 const transporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
   port: 587,
-  secure: false, // Use TLS
+  secure: false,
   auth: {
-    user: "9bbac1001@smtp-brevo.com", // Your Sendinblue SMTP login
+    user: "9bbac1001@smtp-brevo.com",
     pass: process.env.SENDINBLUE_SMTP_KEY,
   },
 });
 
-// Verify transporter configuration
 transporter.verify((error, success) => {
   if (error) {
     console.error("❌ Email transporter error:", error);
@@ -20,7 +18,6 @@ transporter.verify((error, success) => {
     console.log("✅ Email server is ready to send messages");
   }
 });
-
 
 export const sendAppointmentConfirmation = async (appointment) => {
   try {
@@ -68,9 +65,7 @@ Salon Management Team
   }
 };
 
-/**
- * Send payment receipt email
- */
+//  Sending payment receipt email
 export const sendPaymentReceipt = async (appointment, payment) => {
   try {
     const emailText = `
@@ -121,9 +116,8 @@ Salon Management Team
   }
 };
 
-/**
- * Send appointment reminder email (24 hours before)
- */
+//  Send appointment reminder email (24 hours before)
+
 export const sendAppointmentReminder = async (appointment) => {
   try {
     const emailText = `
@@ -166,9 +160,8 @@ Salon Management Team
   }
 };
 
-/**
- * Send appointment cancellation email
- */
+//  * Send appointment cancellation email
+
 export const sendAppointmentCancellation = async (appointment) => {
   try {
     const emailText = `

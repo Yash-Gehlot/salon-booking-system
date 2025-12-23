@@ -1,7 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
+import path from "path"; // Node's path module to handle file/folder paths.
+import { fileURLToPath } from "url"; // utility to convert file URLs to regular file paths (needed for ES modules).
+
 import sequelize from "./src/config/db.js";
 import errorHandler from "./src/middlewares/errorHandler.js";
 import authRoutes from "./src/routes/authRoutes.js";
@@ -13,7 +14,7 @@ import reviewRoutes from "./src/routes/reviewRoutes.js";
 import adminRoutes from "./src/routes/adminRoutes.js";
 
 // Get __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
+const __filename = fileURLToPath(import.meta.url); //Gets the current file's directory path (ES modules don't have __dirname by default).
 const __dirname = path.dirname(__filename);
 
 dotenv.config({ quiet: true });

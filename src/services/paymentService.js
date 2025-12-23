@@ -10,10 +10,10 @@ const razorpay = new Razorpay({
 export const createRazorpayOrder = async (amount, receipt) => {
   try {
     const options = {
-      amount: amount * 100, // Razorpay expects amount in paise (multiply by 100)
+      amount: amount * 100, // Razorpay expects amount in paise  
       currency: "INR",
       receipt: receipt,
-      payment_capture: 1, // Auto capture payment
+      payment_capture: 1,  
     };
 
     const order = await razorpay.orders.create(options);
@@ -24,7 +24,7 @@ export const createRazorpayOrder = async (amount, receipt) => {
   }
 };
 
-// Verify Razorpay Payment Signature
+ 
 export const verifyRazorpaySignature = (orderId, paymentId, signature) => {
   const text = `${orderId}|${paymentId}`;
   const expectedSignature = crypto
